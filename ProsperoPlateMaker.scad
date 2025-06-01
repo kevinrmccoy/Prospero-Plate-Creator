@@ -8,7 +8,9 @@ number_of_units = 1; // [1:10]
 
 // Is this plate going on the end of the unit? (Not yet implemented)
 end_plate = false;
-// TODO: Implement this.
+
+//If so, is it going on the left end or right end?
+end_position = "left"; // [left, right]
 
 //Resolution of curves. Higher values give smoother curves but increase rendering time.
 resolution = 100; //[10, 20, 30, 50, 100]
@@ -41,7 +43,12 @@ single_unit_width = 19; // 0.001
 // Center distance for holes from unit to unit. (19.304 default.) [mm] (Don't change this unless you're having fit issues.)
 inter_unit_spacing = 19.304; // 0.001
 
+// Amount to cut off the end if this panel is going on the first or last slots. (2.0 default.) [mm] (Don't change this unless you're having fit issues.)
+end_plate_clearance = 2; // 0.01
+// TODO: Reset this number
+
 /* [ Hidden ] */
+
 $fn = resolution; // Rendering quality
 thin_dim = 0.01; // A small value used for making hulls.
 
@@ -70,6 +77,8 @@ module main_body_plan_sketch() {
 				}
 			}
 		}
+	} else {
+		square(size = [plate_length, generated_plate_y_width], center=true);
 	}
 }
 
@@ -139,12 +148,23 @@ module mounting_holes() {
     }
 }
 
+module end_plate_cutoff() {
+    cut_height = plate_thickness + 2 * thin_dim; // This makes sure it really cuts through
+	end_plate_y_center = (generated_plate_y_width/2) - (end_plate_clearance/2);
+	end_direction = (end_position == "left") ? 1 : -1;
+	translate([0, generated_plate_y_width/2*end_direction, plate_thickness/2])
+		cube(size=[plate_length, end_plate_clearance, cut_height], center=true);
+}
+
 // --- Main Assembly ---
 // Subtract mounting holes from the plate body
 if (number_of_units > 0) { // Only generate if there's at least one unit
     difference() {
         plate_body();
         mounting_holes();
+		if (end_plate) {
+			end_plate_cutoff();
+		}
     }
 } else {
     %cube(1); // Show a small cube if number_of_units is invalid, to indicate an issue.
