@@ -17,7 +17,7 @@ resolution = 100; //[10, 20, 30, 50, 100]
 
 /* [ Text Parameters ] */
 // Set to true to add text, false to disable.
-enable_text = false;       
+enable_text = true;       
 
 // [The text to display on the plate.
 text_string = "TGR";
@@ -25,9 +25,12 @@ text_string = "TGR";
 // Font size. [mm]
 text_size = 4; // [1:0.1:20]
 
-// Font name. Ensure it's installed on your system. ["Liberation Sans", "Arial", "Helvetica", "Verdana", "Times New Roman", "Courier New", "Georgia", "Impact", "Comic Sans MS"]
-text_font = "Liberation Sans"; 
+// Font name. Ensure it's installed on your system. 
+text_font = "Liberation Sans"; // [Liberation Sans, Open Sans, Raleway]
 // TODO: Figure out the font situation and make an enum
+
+// Font style, not all fonts support all styles.
+text_font_style = "Regular"; // [Regular, Bold, Bold Italic, Italic]
 
 // How the text interacts with the plate.
 text_style = "emboss"; // [emboss, deboss, flat]
@@ -88,6 +91,9 @@ end_plate_clearance = 2; // 0.01
 
 $fn = resolution; // Rendering quality
 thin_dim = 0.01; // A small value used for making hulls or ensuring cuts.
+text_full_font = str(text_font , ":style=", text_font_style);
+plate_color = "DarkSlateGrey";
+text_color = "Red";
 
 // --- Calculate Overall Plate Y-Width ---
 generated_plate_y_width = (number_of_units <= 0) ? single_unit_width : // Make single plate for unit values below 1.
@@ -96,7 +102,6 @@ generated_plate_y_width = (number_of_units <= 0) ? single_unit_width : // Make s
 
 // --- Calculated Taper Z-Height ---
 // Z-height of the tapered/chamfered edge portion.
-// The main flat "front face" for text is related to this.
 actual_taper_z_height_calc = min(edge_chamfer_size, plate_thickness / 2); // If half the plate is thinner than the chamfer, use the half plate for the height.
 
 
@@ -136,33 +141,35 @@ module tapered_edge_plan_sketch() {
 
 // Module to create the 3D plate body with tapered edges ("<--->" profile)
 module plate_body() {
-	union() {
-		hull() { // Make bottom of plate
-			linear_extrude(height = thin_dim) {
-				tapered_edge_plan_sketch();
+	color(plate_color) {
+		union() {
+			hull() { // Make bottom of plate
+				linear_extrude(height = thin_dim) {
+					tapered_edge_plan_sketch();
+				}
+				
+				translate([0,0,actual_taper_z_height_calc])
+					linear_extrude(height = thin_dim) {
+						main_body_plan_sketch();
+					}
 			}
 			
-			translate([0,0,actual_taper_z_height_calc])
-				linear_extrude(height = thin_dim) {
-					main_body_plan_sketch();
-				}
-		}
-		
-		middle_height = plate_thickness - (actual_taper_z_height_calc * 2);
-		if (middle_height > thin_dim) { // Make middle of plate (Only need to extrude this bit if the overall plate is thicker than the chamfer.)
-			translate([0,0,actual_taper_z_height_calc])
-				linear_extrude(height = middle_height) main_body_plan_sketch();
-		}
-		
-		hull() { // Make top of plate
-			translate([0,0,plate_thickness - actual_taper_z_height_calc]) 
-				linear_extrude(height = thin_dim) {
-					main_body_plan_sketch();
-				}
-			translate([0,0,plate_thickness]) 
-				linear_extrude(height = thin_dim) {
-					tapered_edge_plan_sketch(); 
-				}
+			middle_height = plate_thickness - (actual_taper_z_height_calc * 2);
+			if (middle_height > thin_dim) { // Make middle of plate (Only need to extrude this bit if the overall plate is thicker than the chamfer.)
+				translate([0,0,actual_taper_z_height_calc])
+					linear_extrude(height = middle_height) main_body_plan_sketch();
+			}
+			
+			hull() { // Make top of plate
+				translate([0,0,plate_thickness - actual_taper_z_height_calc]) 
+					linear_extrude(height = thin_dim) {
+						main_body_plan_sketch();
+					}
+				translate([0,0,plate_thickness]) 
+					linear_extrude(height = thin_dim) {
+						tapered_edge_plan_sketch(); 
+					}
+			}
 		}
 	}
 }
@@ -204,38 +211,28 @@ module end_plate_cutoff() {
 module text_object() {
 	// Z-level of the main flat top surface of the plate (this is below the top taper)
 	// Text will be placed relative to this surface.
-	front_face_z_level = plate_thickness - actual_taper_z_height_calc;
+	front_face_z_level = plate_thickness;
 
-	text_extrude_val = 0;
-	z_pos_text_base_val = 0;
+	text_extrude_val = (text_style == "deboss") ? text_effect_depth + thin_dim : text_effect_depth;
+	z_pos_text_base_val = (text_style == "emboss") ? front_face_z_level : front_face_z_level - text_effect_depth;
 
-	if (text_style == "emboss") {
-		text_extrude_val = text_effect_depth;
-		z_pos_text_base_val = front_face_z_level; // Text starts on top of the front face
-	} else if (text_style == "deboss") {
-		// For debossing, the object created is a cutting tool.
-		// It starts from within the plate and extrudes slightly beyond the front face to ensure a clean cut.
-		text_extrude_val = text_effect_depth + thin_dim; 
-		z_pos_text_base_val = front_face_z_level - text_effect_depth; // Starts from 'depth' units below the front face
-	} else if (text_style == "flat") {
-		// For flat, text is flush with the front face, filling a cavity of 'text_effect_depth'.
-		text_extrude_val = text_effect_depth;
-		z_pos_text_base_val = front_face_z_level - text_effect_depth; // Starts from 'depth' units below, extrudes up to front face
-	}
+	echo(text_effect_depth=text_effect_depth,text_extrude_val=text_extrude_val,z_pos_text_base_val=z_pos_text_base_val);
 
 	translate([text_center_x_offset, text_center_y_offset, z_pos_text_base_val]) {
 		// Apply rotation for vertical text orientation
 		object_rotation = (text_orientation == "vertical") ? [0, 0, 90] : [0, 0, 0];
 		
 		rotate(object_rotation) {
-			linear_extrude(height = text_extrude_val) {
-				text(text_string, 
-					 size = text_size, 
-					 font = text_font, 
-					 halign = text_halign, 
-					 valign = text_valign,
-					 spacing = text_spacing
-					 );
+			color(text_color) {
+				linear_extrude(height = text_extrude_val) {
+					text(text_string, 
+						size = text_size, 
+						font = text_full_font, 
+						halign = text_halign, 
+						valign = text_valign,
+						spacing = text_spacing
+						);
+				}
 			}
 		}
 	}
@@ -243,7 +240,8 @@ module text_object() {
 
 // --- Main Assembly ---
 if (number_of_units > 0) {
-	if (enable_text && text_style == "deboss") {
+	if (enable_text && (text_style == "deboss")) {
+		echo("deboss")
 		difference() {
 			plate_body();
 			mounting_holes();
@@ -253,6 +251,7 @@ if (number_of_units > 0) {
 			text_object();
 		}
 	} else if (enable_text && (text_style == "emboss" || text_style == "flat")) {
+		echo("emboss or flat")
 		union() {
 			difference() {
 				plate_body();
@@ -264,6 +263,7 @@ if (number_of_units > 0) {
 			text_object();
 		}
 	} else { // No text enabled, or an unhandled text_style
+		echo("no text")
 		difference() {
 			plate_body();
 			mounting_holes();
