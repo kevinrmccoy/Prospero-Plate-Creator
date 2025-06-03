@@ -20,80 +20,83 @@ resolution = 100; //[10, 20, 30, 50, 100]
 enable_text = true;       
 
 // [The text to display on the plate.
-text_string = "TGR";
+text_string = "Prospero";
 
 // Font size. [mm]
 text_size = 4; // [1:0.1:20]
 
 // Font name. Ensure it's installed on your system. 
 text_font = "Liberation Sans"; // [Liberation Sans, Open Sans, Raleway]
-// TODO: Figure out the font situation and make an enum
+// TODO: Add more fonts.
 
 // Font style, not all fonts support all styles.
 text_font_style = "Regular"; // [Regular, Bold, Bold Italic, Italic]
+// TODO: Decide on this list.
 
-// How the text interacts with the plate.
-text_style = "emboss"; // [emboss, deboss, flat]
+// How the text interacts with the plate. (Can only emboss or deboss for now.)
+text_style = "emboss"; // [emboss, deboss]
+// TODO: Migrate to BOSL version so that we can add a "flat" option for multi-color.
 
-// Depth/height for Emboss/Deboss, or thickness for Flat-Embed [mm]
+// Depth/height for Deboss/Emboss [mm].
 text_effect_depth = 0.4; // [0.1:0.05:2.0]
 
 // Text baseline orientation on the plate.
 text_orientation = "horizontal"; // [horizontal, vertical]
+//TODO: Add flips.
 
-// X-offset from plate center for text's center point [mm]
+// Vertical offset from plate center for text's center point [mm].
 text_center_x_offset = 0; // [-40:0.1:40]
 
-// Y-offset from plate center for text's center point [mm]
+// Horizontal offset from plate center for text's center point [mm].
 text_center_y_offset = 0; // [-50:0.1:50]
-
-//  Horizontal alignment of text string relative to its center point.
-text_halign = "center"; // ["left", "center", "right"]
 
 // Vertical alignment of text string relative to its center point.
 text_valign = "center"; // ["top", "center", "baseline", "bottom"]
+
+// Horizontal alignment of text string relative to its center point.
+text_halign = "center"; // ["left", "center", "right"]
 
 // Text spacing between characters.
 text_spacing = 1; // [0.1]
 
 /* [ Advanced User Parameters ] */
-// Total thickness of the plate [mm] (1.2 default)
+// Total thickness of the plate [mm]. (1.2 default)
 plate_thickness = 1.2; // [0.8:0.05:2.0]
 
-// Diameter of mounting holes [mm] (3.25 default)
+// Diameter of mounting holes [mm]. (3.25 default)
 hole_diameter = 3.25; // [1:0.01:5]
 
 // Nominal size of the chamfer on edges [mm]. Makes edges not sharp.  0.4 is a good number.
 edge_chamfer_size = 0.4; // [0:0.05:1]
 
-// Radius for the filleted corners of the overall plate [mm] Makes corners not sharp.  0.5 is a good number.
+// Radius for the filleted corners of the overall plate [mm]. Makes corners not sharp.  0.5 is a good number.
 corner_fillet_radius = 0.5; // [0:0.05:1]
 
 /* [ Prospero Fit Parameters ] */
 // Don't change these unless you're having fit issues.
 
-// Length of the plate (79.5 default) [mm] (Don't change this unless you're having fit issues.)
+// Length of the plate (79.5 default) [mm]. (Don't change this unless you're having fit issues.)
 plate_length = 79.5; // 0.1
 
-// Distance between the centers of a pair of mounting holes for a single unit (71.438 default) [mm] (Don't change this unless you're having fit issues.)
+// Distance between the centers of a pair of mounting holes for a single unit (71.438 default) [mm]. (Don't change this unless you're having fit issues.)
 hole_spacing = 71.438; // 0.001
 
-// Width for a single unit. (19 default) [mm] (Don't change this unless you're having fit issues.)
+// Width for a single unit. (19 default) [mm]. (Don't change this unless you're having fit issues.)
 single_unit_width = 19; // 0.001
 
-// Center distance for holes from unit to unit. (19.304 default.) [mm] (Don't change this unless you're having fit issues.)
+// Center distance for holes from unit to unit (19.304 default) [mm]. (Don't change this unless you're having fit issues.)
 inter_unit_spacing = 19.304; // 0.001
 
-// Amount to cut off the end if this panel is going on the first or last slots. (2.0 default.) [mm] (Don't change this unless you're having fit issues.)
+// Amount to cut off the end if this panel is going on the first or last slots (2.0 default) [mm]. (Don't change this unless you're having fit issues.)
 end_plate_clearance = 2; // 0.01
 
 /* [ Hidden ] */
 
 $fn = resolution; // Rendering quality
 thin_dim = 0.01; // A small value used for making hulls or ensuring cuts.
-text_full_font = str(text_font , ":style=", text_font_style);
-plate_color = "DarkSlateGrey";
-text_color = "Red";
+text_full_font = str(text_font , ":style=", text_font_style); // Font name + style.
+plate_color = "DarkSlateGrey"; // Colors only affect the preview.
+text_color = "White"; // Colors only affect the preview.
 
 // --- Calculate Overall Plate Y-Width ---
 generated_plate_y_width = (number_of_units <= 0) ? single_unit_width : // Make single plate for unit values below 1.
@@ -103,7 +106,6 @@ generated_plate_y_width = (number_of_units <= 0) ? single_unit_width : // Make s
 // --- Calculated Taper Z-Height ---
 // Z-height of the tapered/chamfered edge portion.
 actual_taper_z_height_calc = min(edge_chamfer_size, plate_thickness / 2); // If half the plate is thinner than the chamfer, use the half plate for the height.
-
 
 // --- Modules ---
 
@@ -128,7 +130,6 @@ module main_body_plan_sketch() {
 	}
 }
 
-
 // Sketch for the plan view of the top and bottom surface (to create chamfer) (at z=0 and z=plate_thickness).
 // This profile is smaller than the main body cross-section.
 module tapered_edge_plan_sketch() {
@@ -138,8 +139,7 @@ module tapered_edge_plan_sketch() {
 	}
 }
 
-
-// Module to create the 3D plate body with tapered edges ("<--->" profile)
+// Module to create the 3D plate body with tapered edges.
 module plate_body() {
 	color(plate_color) {
 		union() {
@@ -216,8 +216,6 @@ module text_object() {
 	text_extrude_val = (text_style == "deboss") ? text_effect_depth + thin_dim : text_effect_depth;
 	z_pos_text_base_val = (text_style == "emboss") ? front_face_z_level : front_face_z_level - text_effect_depth;
 
-	echo(text_effect_depth=text_effect_depth,text_extrude_val=text_extrude_val,z_pos_text_base_val=z_pos_text_base_val);
-
 	translate([text_center_x_offset, text_center_y_offset, z_pos_text_base_val]) {
 		// Apply rotation for vertical text orientation
 		object_rotation = (text_orientation == "vertical") ? [0, 0, 90] : [0, 0, 0];
@@ -241,7 +239,6 @@ module text_object() {
 // --- Main Assembly ---
 if (number_of_units > 0) {
 	if (enable_text && (text_style == "deboss")) {
-		echo("deboss")
 		difference() {
 			plate_body();
 			mounting_holes();
@@ -250,8 +247,7 @@ if (number_of_units > 0) {
 			}
 			text_object();
 		}
-	} else if (enable_text && (text_style == "emboss" || text_style == "flat")) {
-		echo("emboss or flat")
+	} else if (enable_text && (text_style == "emboss")) {
 		union() {
 			difference() {
 				plate_body();
@@ -263,7 +259,6 @@ if (number_of_units > 0) {
 			text_object();
 		}
 	} else { // No text enabled, or an unhandled text_style
-		echo("no text")
 		difference() {
 			plate_body();
 			mounting_holes();
