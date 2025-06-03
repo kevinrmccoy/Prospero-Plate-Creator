@@ -27,22 +27,22 @@ text_size = 4; // [1:0.1:20]
 
 // Font name. Ensure it's installed on your system. 
 text_font = "Liberation Sans"; // [Liberation Sans, Open Sans, Raleway]
-// TODO: Add more fonts.
+// TODO: #1 Add more fonts.
 
 // Font style, not all fonts support all styles.
 text_font_style = "Regular"; // [Regular, Italic, Bold, Bold Italic]
-// TODO: Decide on this list.
+// TODO: #2 Decide on this list.
 
 // How the text interacts with the plate. (Can only emboss or deboss for now.)
 text_effect = "emboss"; // [emboss, deboss]
-// TODO: Migrate to BOSL version so that we can add a "flat" option for multi-color.
+// TODO: #3 Migrate to BOSL version so that we can add a "flat" option for multi-color.
 
 // Depth/height for Deboss/Emboss [mm].
 text_effect_depth = 0.4; // [0.1:0.05:2.0]
 
 // Text baseline orientation on the plate.
 text_orientation = "vertical"; // [horizontal, vertical]
-//TODO: Add flips.
+//TODO: #4 Add flips.
 
 // Horizontal offset from plate center for text's center point [mm].
 text_center_width_offset = 0; // [-40:0.1:40]
