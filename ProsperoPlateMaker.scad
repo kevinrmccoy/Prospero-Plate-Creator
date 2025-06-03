@@ -6,7 +6,7 @@
 // OpenSCAD by Kevin McCoy. www.kevin-mccoy.com - @kevinrmccoy on github
 //
 
-/* [ User Parameters ] */
+/* [User Parameters] */
 // Number of "units" (empty switch panels) wide.
 number_of_units = 1; // [1:10]
 
@@ -19,7 +19,7 @@ end_position = "left"; // [left, right]
 //Resolution of curves. Higher values give smoother curves but increase rendering time.
 resolution = 100; //[10, 20, 30, 50, 100]
 
-/* [ Text Parameters ] */
+/* [Text Parameters] */
 // Set to true to add text, false to disable.
 enable_text = false;       
 
@@ -63,7 +63,7 @@ text_valign = "center"; // ["top", "center", "baseline", "bottom"]
 // Text spacing between characters.
 text_spacing = 1; // [0.1]
 
-/* [ Advanced User Parameters ] */
+/* [Advanced User Parameters] */
 // Total thickness of the plate [mm]. (1.2 default)
 plate_thickness = 1.2; // [0.8:0.05:2.0]
 
@@ -76,7 +76,7 @@ edge_chamfer_size = 0.4; // [0:0.05:1]
 // Radius for the filleted corners of the overall plate [mm]. Makes corners not sharp.  0.5 is a good number.
 corner_fillet_radius = 0.5; // [0:0.05:1]
 
-/* [ Prospero Fit Parameters ] */
+/* [Prospero Fit Parameters] */
 // Don't change these unless you're having fit issues.
 
 // Height of the plate (79.5 default) [mm]. (Don't change this unless you're having fit issues.)
@@ -94,7 +94,7 @@ inter_unit_spacing = 19.304; // 0.001
 // Amount to cut off the end if this panel is going on the first or last slots (2.0 default) [mm]. (Don't change this unless you're having fit issues.)
 end_plate_clearance = 2; // 0.01
 
-/* [ Hidden ] */
+/* [Hidden] */
 
 $fn = resolution; // Rendering quality
 thin_dim = 0.01; // A small value used for making hulls or ensuring cuts.
