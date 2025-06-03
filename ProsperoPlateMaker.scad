@@ -30,7 +30,7 @@ text_string = "Prospero";
 text_size = 4; // [1:0.1:20]
 
 // Font name. Ensure it's installed on your system. 
-text_font = "Liberation Sans"; // [Liberation Sans, Open Sans, Raleway]
+text_font = "Liberation Sans"; // font
 // TODO: #1 Add more fonts.
 
 // Font style, not all fonts support all styles.
