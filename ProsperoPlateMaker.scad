@@ -1,6 +1,10 @@
 // Cover Plate Generator
 //
-// This generates cover plates for the Ben Peoples Industries Prospero Cue Light unit.
+// This generates cover plates for empty switch locations on the Ben Peoples Industries Prospero Cue Light unit.
+// https://benpeoples.com/stock-products/prospero-cue-light-system/
+//
+// OpenSCAD by Kevin McCoy. www.kevin-mccoy.com - @kevinrmccoy on github
+//
 
 /* [ User Parameters ] */
 // Number of "units" (empty switch panels) wide.
