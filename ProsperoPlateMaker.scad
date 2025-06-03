@@ -17,7 +17,7 @@ resolution = 100; //[10, 20, 30, 50, 100]
 
 /* [ Text Parameters ] */
 // Set to true to add text, false to disable.
-enable_text = true;       
+enable_text = false;       
 
 // [The text to display on the plate.
 text_string = "Prospero";
@@ -30,31 +30,31 @@ text_font = "Liberation Sans"; // [Liberation Sans, Open Sans, Raleway]
 // TODO: Add more fonts.
 
 // Font style, not all fonts support all styles.
-text_font_style = "Regular"; // [Regular, Bold, Bold Italic, Italic]
+text_font_style = "Regular"; // [Regular, Italic, Bold, Bold Italic]
 // TODO: Decide on this list.
 
 // How the text interacts with the plate. (Can only emboss or deboss for now.)
-text_style = "emboss"; // [emboss, deboss]
+text_effect = "emboss"; // [emboss, deboss]
 // TODO: Migrate to BOSL version so that we can add a "flat" option for multi-color.
 
 // Depth/height for Deboss/Emboss [mm].
 text_effect_depth = 0.4; // [0.1:0.05:2.0]
 
 // Text baseline orientation on the plate.
-text_orientation = "horizontal"; // [horizontal, vertical]
+text_orientation = "vertical"; // [horizontal, vertical]
 //TODO: Add flips.
 
-// Vertical offset from plate center for text's center point [mm].
-text_center_x_offset = 0; // [-40:0.1:40]
-
 // Horizontal offset from plate center for text's center point [mm].
-text_center_y_offset = 0; // [-50:0.1:50]
+text_center_width_offset = 0; // [-40:0.1:40]
 
-// Vertical alignment of text string relative to its center point.
-text_valign = "center"; // ["top", "center", "baseline", "bottom"]
+// Vertical offset from plate center for text's center point [mm].
+text_center_height_offset = 0; // [-50:0.1:50]
 
 // Horizontal alignment of text string relative to its center point.
 text_halign = "center"; // ["left", "center", "right"]
+
+// Vertical alignment of text string relative to its center point.
+text_valign = "center"; // ["top", "center", "baseline", "bottom"]
 
 // Text spacing between characters.
 text_spacing = 1; // [0.1]
@@ -75,8 +75,8 @@ corner_fillet_radius = 0.5; // [0:0.05:1]
 /* [ Prospero Fit Parameters ] */
 // Don't change these unless you're having fit issues.
 
-// Length of the plate (79.5 default) [mm]. (Don't change this unless you're having fit issues.)
-plate_length = 79.5; // 0.1
+// Height of the plate (79.5 default) [mm]. (Don't change this unless you're having fit issues.)
+plate_height = 79.5; // 0.1
 
 // Distance between the centers of a pair of mounting holes for a single unit (71.438 default) [mm]. (Don't change this unless you're having fit issues.)
 hole_spacing = 71.438; // 0.001
@@ -96,21 +96,21 @@ $fn = resolution; // Rendering quality
 thin_dim = 0.01; // A small value used for making hulls or ensuring cuts.
 text_full_font = str(text_font , ":style=", text_font_style); // Font name + style.
 plate_color = "DarkSlateGrey"; // Colors only affect the preview.
-text_color = "White"; // Colors only affect the preview.
+text_color = (text_effect == "emboss") ? "White" : "Black"; // Colors only affect the preview.
 
-// --- Calculate Overall Plate Y-Width ---
-generated_plate_y_width = (number_of_units <= 0) ? single_unit_width : // Make single plate for unit values below 1.
+// --- Calculate Overall Plate Width ---
+generated_plate_width = (number_of_units <= 0) ? single_unit_width : // Make single plate for unit values below 1.
 						(number_of_units == 1) ? single_unit_width :
 						(single_unit_width + (number_of_units - 1) * inter_unit_spacing);
 
-// --- Calculated Taper Z-Height ---
+// --- Calculated Taper Z-Dim ---
 // Z-height of the tapered/chamfered edge portion.
-actual_taper_z_height_calc = min(edge_chamfer_size, plate_thickness / 2); // If half the plate is thinner than the chamfer, use the half plate for the height.
+actual_taper_z_dim_calc = min(edge_chamfer_size, plate_thickness / 2); // If half the plate is thinner than the chamfer, use the half plate for the height.
 
 // --- Modules ---
 
 // Sketch of main plate body plan view (centered at origin).
-// Dimensions are plate_length (X) x generated_plate_y_width (Y) with filleted corners.
+// Dimensions are (generated_plate_width (X) by plate_height (Y)) with filleted corners.
 // Uses hull command by placing four fillet circles at the corners and then filling in the area in between.
 module main_body_plan_sketch() {
 	if (corner_fillet_radius > 0) {
@@ -118,15 +118,15 @@ module main_body_plan_sketch() {
 			for (sx = [-1, 1]) {
 				for (sy = [-1, 1]) {
 					translate([
-						sx * (plate_length/2 - corner_fillet_radius),
-						sy * (generated_plate_y_width/2 - corner_fillet_radius)
+						sx * (generated_plate_width/2 - corner_fillet_radius),
+						sy * (plate_height/2 - corner_fillet_radius)
 					]) 
 					circle(r = corner_fillet_radius);
 				}
 			}
 		}
 	} else {
-		square(size = [plate_length, generated_plate_y_width], center=true);
+		square(size = [generated_plate_width, plate_height], center=true);
 	}
 }
 
@@ -147,21 +147,19 @@ module plate_body() {
 				linear_extrude(height = thin_dim) {
 					tapered_edge_plan_sketch();
 				}
-				
-				translate([0,0,actual_taper_z_height_calc])
+				translate([0,0,actual_taper_z_dim_calc])
 					linear_extrude(height = thin_dim) {
 						main_body_plan_sketch();
 					}
 			}
-			
-			middle_height = plate_thickness - (actual_taper_z_height_calc * 2);
+			middle_height = plate_thickness - (actual_taper_z_dim_calc * 2);
 			if (middle_height > thin_dim) { // Make middle of plate (Only need to extrude this bit if the overall plate is thicker than the chamfer.)
-				translate([0,0,actual_taper_z_height_calc])
+				translate([0,0,actual_taper_z_dim_calc])
 					linear_extrude(height = middle_height) main_body_plan_sketch();
 			}
 			
 			hull() { // Make top of plate
-				translate([0,0,plate_thickness - actual_taper_z_height_calc]) 
+				translate([0,0,plate_thickness - actual_taper_z_dim_calc]) 
 					linear_extrude(height = thin_dim) {
 						main_body_plan_sketch();
 					}
@@ -183,13 +181,13 @@ module mounting_holes() {
 	for (i = [0 : max(0, number_of_units - 1)]) { 
 		// Calculate Y offset for the center of the current unit's hole pattern.
 		// The pattern of unit centers is itself centered around Y=0.
-		current_unit_y_center = (number_of_units == 1) ? 0 : 
+		current_unit_width_center = (number_of_units == 1) ? 0 : 
 								(i - (number_of_units - 1) / 2) * inter_unit_spacing;
 
-		// Create the pair of holes (spaced along X-axis by hole_spacing) for the current unit at its calculated Y-center.
-		translate([hole_spacing/2, current_unit_y_center, plate_thickness/2]) 
+		// Create the pair of holes (spaced along long axis by hole_spacing) for the current unit at its calculated center.
+		translate([current_unit_width_center, hole_spacing/2, plate_thickness/2]) 
 			cylinder(r = hole_radius, h = hole_cut_height, center=true);
-		translate([-hole_spacing/2, current_unit_y_center, plate_thickness/2]) 
+		translate([current_unit_width_center, -hole_spacing/2, plate_thickness/2]) 
 			cylinder(r = hole_radius, h = hole_cut_height, center=true);
 	}
 }
@@ -198,14 +196,14 @@ module end_plate_cutoff() {
 	cut_height = plate_thickness + 2 * thin_dim; // This makes sure it really cuts through
 	// This calculation positions the cutoff relative to the edge of the generated plate width.
 	// If end_plate_clearance is, for example, 2mm, it cuts 2mm off one side.
-	// The center of this 2mm wide cutting cube needs to be at (generated_plate_y_width/2 - end_plate_clearance/2).
+	// The center of this 2mm wide cutting cube needs to be at (generated_plate_width/2 - end_plate_clearance/2).
 
-	y_pos_of_cutoff_center = (generated_plate_y_width/2) - (end_plate_clearance/2);
+	pos_of_cutoff_center = (generated_plate_width/2) - (end_plate_clearance/2);
 	
-	end_direction_multiplier = (end_position == "left") ? -1 : 1; // Assuming "left" means -Y side, "right" means +Y side
+	end_direction_multiplier = (end_position == "left") ? -1 : 1; // Assuming "left" means - side, "right" means + side
 
-	translate([0, y_pos_of_cutoff_center * end_direction_multiplier, plate_thickness/2])
-		cube(size=[plate_length + 2*thin_dim, end_plate_clearance, cut_height], center=true);
+	translate([pos_of_cutoff_center * end_direction_multiplier, 0, plate_thickness/2])
+		cube(size=[end_plate_clearance, plate_height + 2 * thin_dim, cut_height], center=true);
 }
 
 module text_object() {
@@ -213,10 +211,10 @@ module text_object() {
 	// Text will be placed relative to this surface.
 	front_face_z_level = plate_thickness;
 
-	text_extrude_val = (text_style == "deboss") ? text_effect_depth + thin_dim : text_effect_depth;
-	z_pos_text_base_val = (text_style == "emboss") ? front_face_z_level : front_face_z_level - text_effect_depth;
+	text_extrude_val = (text_effect == "deboss") ? text_effect_depth + 2 * thin_dim : text_effect_depth;
+	z_pos_text_base_val = (text_effect == "emboss") ? front_face_z_level : front_face_z_level - text_effect_depth;
 
-	translate([text_center_x_offset, text_center_y_offset, z_pos_text_base_val]) {
+	translate([text_center_width_offset, text_center_height_offset, z_pos_text_base_val]) {
 		// Apply rotation for vertical text orientation
 		object_rotation = (text_orientation == "vertical") ? [0, 0, 90] : [0, 0, 0];
 		
@@ -238,7 +236,7 @@ module text_object() {
 
 // --- Main Assembly ---
 if (number_of_units > 0) {
-	if (enable_text && (text_style == "deboss")) {
+	if (enable_text && (text_effect == "deboss")) {
 		difference() {
 			plate_body();
 			mounting_holes();
@@ -247,7 +245,7 @@ if (number_of_units > 0) {
 			}
 			text_object();
 		}
-	} else if (enable_text && (text_style == "emboss")) {
+	} else if (enable_text && (text_effect == "emboss")) {
 		union() {
 			difference() {
 				plate_body();
@@ -258,7 +256,7 @@ if (number_of_units > 0) {
 			}
 			text_object();
 		}
-	} else { // No text enabled, or an unhandled text_style
+	} else { // No text enabled, or an unhandled text_effect
 		difference() {
 			plate_body();
 			mounting_holes();
