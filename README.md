@@ -1,8 +1,6 @@
 # Prospero Plate Creator
 
-Makes custom-sized front panel plates for the Prospero Cue Light Panel by Ben Peoples Industries.
-
-https://benpeoples.com/stock-products/prospero-cue-light-system/
+Makes custom-sized front panel plates for the [Prospero Cue Light Panel by Ben Peoples Industries](https://benpeoples.com/stock-products/prospero-cue-light-system/).
 
 Runs in OpenSCAD but if you want to do multicolor stuff with text that feature is only available on MakerWorld at the moment.
 
