@@ -35,14 +35,8 @@ text_string = "Prospero";
 // Font size. [mm]
 text_size = 4; // [1:0.1:20]
 
-// Font name. Ensure it's installed on your system. 
-text_font = "Liberation Sans"; // font
-// If this is used outside of Makerworld it would be helpful to have an enum.
-
-/* Not used on Makerworld
-// Font style, not all fonts support all styles.
-text_font_style = "Regular"; // [Regular, Italic, Bold, Bold Italic]
-*/
+// Font name and style.
+text_font_mw = "Liberation Sans"; // font
 
 // Depth/height for Deboss/Emboss [mm].
 text_effect_depth = 0.4; // [0.1:0.05:2.0]
@@ -96,12 +90,22 @@ inter_unit_spacing = 19.304; // 0.001
 // Amount to cut off the end if this panel is going on the first or last slots (2.0 default) [mm]. (Don't change this unless you're having fit issues.)
 end_plate_clearance = 2; // 0.01
 
+/* [Non-MakerWorld Text Options] */
+
+// Use this font and font styling instead of the MakerWorld chooser above (Use this option if you're not running on MakerWorld).
+local_font = false;
+
+// Font name. Ensure it's installed on your system. 
+text_font = "Liberation Sans"; // [Liberation Mono, Liberation Sans, Liberation Serif]
+
+// Font style, not all fonts support all styles.
+text_font_style = "Regular"; // [Regular, Italic, Bold, Bold Italic]
+
 /* [Hidden] */
 
 $fn = resolution; // Rendering quality
 thin_dim = 0.01; // A small value used for making hulls or ensuring cuts.
-text_full_font = text_font;
-// (Outside of MW use this) text_full_font = str(text_font , ":style=", text_font_style); // Font name + style.
+text_full_font = local_font ? str(text_font , ":style=", text_font_style) : text_font_mw;
 plate_color = "DarkSlateGrey";
 text_color = (text_separate) ? "White" : plate_color;
 
