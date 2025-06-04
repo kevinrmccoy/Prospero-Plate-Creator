@@ -18,5 +18,8 @@ Suggested printing tips: Print with a stronger profile than usual for more stiff
 
 ![Photograph of quad plate with text mounted in Prospero unit](ProsperoPlate-4WideWithText.jpg)
 
-Version 1.0 - 2025-06-04
 Version 1.1 - 2025-06-04
+Remove end plate feature (not needed in this configuration)
+
+Version 1.0 - 2025-06-04
+Initial release
