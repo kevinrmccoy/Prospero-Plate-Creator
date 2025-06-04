@@ -48,7 +48,7 @@ text_font_style = "Regular"; // [Regular, Italic, Bold, Bold Italic]
 text_effect_depth = 0.4; // [0.1:0.05:2.0]
 
 // Text baseline orientation on the plate.
-text_rotation = 0; // [0:45:360]
+text_rotation = 90; // [0:45:360]
 
 // Horizontal offset from plate center for text's center point [mm].
 text_center_width_offset = 0; // [-40:0.1:40]
@@ -63,7 +63,7 @@ text_halign = "center"; // ["left", "center", "right"]
 text_valign = "center"; // ["top", "center", "baseline", "bottom"]
 
 // Text spacing between characters.
-text_spacing = 1; // [0.1]
+text_spacing = 1; // [1:0.05:5]
 
 /* [Advanced User Parameters] */
 // Total thickness of the plate [mm]. (1.2 default)
@@ -180,7 +180,7 @@ module plate_body() {
 // Module to create the mounting holes for all units
 module mounting_holes() {
 	hole_radius = hole_diameter / 2;
-	hole_cut_height = plate_thickness + 2 * thin_dim; // This makes sure it really cuts through
+	hole_cut_height = plate_thickness + 2 * text_effect_depth + 2 * thin_dim; // This makes sure it really cuts through
 	
 	// Loop through each unit to place its pair of holes
 	for (i = [0 : max(0, number_of_units - 1)]) { 
@@ -190,15 +190,15 @@ module mounting_holes() {
 								(i - (number_of_units - 1) / 2) * inter_unit_spacing;
 
 		// Create the pair of holes (spaced along long axis by hole_spacing) for the current unit at its calculated center.
-		translate([current_unit_width_center, hole_spacing/2, plate_thickness/2]) 
+		translate([current_unit_width_center, hole_spacing/2, hole_cut_height/2]) 
 			cylinder(r = hole_radius, h = hole_cut_height, center=true);
-		translate([current_unit_width_center, -hole_spacing/2, plate_thickness/2]) 
+		translate([current_unit_width_center, -hole_spacing/2, hole_cut_height/2]) 
 			cylinder(r = hole_radius, h = hole_cut_height, center=true);
 	}
 }
 
 module end_plate_cutoff() {
-	cut_height = plate_thickness + 2 * thin_dim; // This makes sure it really cuts through
+	cut_height = plate_thickness + 2 * text_effect_depth + 2 * thin_dim; // This makes sure it really cuts through
 	// This calculation positions the cutoff relative to the edge of the generated plate width.
 	// If end_plate_clearance is, for example, 2mm, it cuts 2mm off one side.
 	// The center of this 2mm wide cutting cube needs to be at (generated_plate_width/2 - end_plate_clearance/2).
@@ -207,7 +207,7 @@ module end_plate_cutoff() {
 	
 	end_direction_multiplier = (end_position == "left") ? -1 : 1; // Assuming "left" means - side, "right" means + side
 
-	translate([pos_of_cutoff_center * end_direction_multiplier, 0, plate_thickness/2])
+	translate([pos_of_cutoff_center * end_direction_multiplier, 0, cut_height/2])
 		cube(size=[end_plate_clearance, plate_height + 2 * thin_dim, cut_height], center=true);
 }
 
@@ -221,9 +221,9 @@ module text_object() {
 
 	translate([text_center_width_offset, text_center_height_offset, z_pos_text_base_val]) {
 		// Apply rotation for vertical text orientation
-		object_rotation = [0, 0, text_rotation];
-		
-		rotate(object_rotation) {
+		text_object_rotation = [0, 0, text_rotation];
+
+		rotate(text_object_rotation) {
 			linear_extrude(height = text_extrude_val) {
 				text(text_string, 
 					size = text_size, 
@@ -237,6 +237,14 @@ module text_object() {
 	}
 }
 
+module text_bounding_box() {
+	// Makes a bounding box for allowable text placement.
+	box_height = plate_thickness + 2 * text_effect_depth + 2 * thin_dim;
+	linear_extrude(height = box_height) {
+		tapered_edge_plan_sketch();
+	}
+}
+
 // --- Main Assembly ---
 if (number_of_units > 0) {
 	if (enable_text && (text_effect == "deboss")) {
@@ -247,12 +255,24 @@ if (number_of_units > 0) {
 				if (end_plate) {
 					end_plate_cutoff();
 				}
-				text_object();
+				intersection() {
+					text_object();
+					text_bounding_box();
+				}
 			}
 		}
 		if (text_separate) {
 			color(text_color) {
-				text_object();
+				intersection() {
+					difference() {
+						text_object();
+						mounting_holes();
+						if (end_plate) {
+							end_plate_cutoff();
+						}
+					}
+					text_bounding_box();
+				}
 			}
 		}
 	} else if (enable_text && (text_effect == "emboss")) {
@@ -267,7 +287,16 @@ if (number_of_units > 0) {
 				}
 			}
 			color(text_color) {
-				text_object();
+				intersection() {
+					difference() {
+						text_object();
+						mounting_holes();
+						if (end_plate) {
+							end_plate_cutoff();
+						}
+					}
+					text_bounding_box();
+				}
 			}
 		}
 	} else { // No text enabled, or an unhandled text_effect
