@@ -37,15 +37,18 @@ text_size = 4; // [1:0.1:20]
 
 // Font name. Ensure it's installed on your system. 
 text_font = "Liberation Sans"; // font
+// If this is used outside of Makerworld it would be helpful to have an enum.
 
+/* Not used on Makerworld
 // Font style, not all fonts support all styles.
 text_font_style = "Regular"; // [Regular, Italic, Bold, Bold Italic]
+*/
 
 // Depth/height for Deboss/Emboss [mm].
 text_effect_depth = 0.4; // [0.1:0.05:2.0]
 
 // Text baseline orientation on the plate.
-text_orientation = "vertical"; // [horizontal, vertical]
+text_rotation = 0; // [0:45:360]
 
 // Horizontal offset from plate center for text's center point [mm].
 text_center_width_offset = 0; // [-40:0.1:40]
@@ -97,7 +100,8 @@ end_plate_clearance = 2; // 0.01
 
 $fn = resolution; // Rendering quality
 thin_dim = 0.01; // A small value used for making hulls or ensuring cuts.
-text_full_font = str(text_font , ":style=", text_font_style); // Font name + style.
+text_full_font = text_font;
+// (Outside of MW use this) text_full_font = str(text_font , ":style=", text_font_style); // Font name + style.
 plate_color = "DarkSlateGrey";
 text_color = (text_separate) ? "White" : plate_color;
 
@@ -217,7 +221,7 @@ module text_object() {
 
 	translate([text_center_width_offset, text_center_height_offset, z_pos_text_base_val]) {
 		// Apply rotation for vertical text orientation
-		object_rotation = (text_orientation == "vertical") ? [0, 0, 90] : [0, 0, 0];
+		object_rotation = [0, 0, text_rotation];
 		
 		rotate(object_rotation) {
 			linear_extrude(height = text_extrude_val) {
