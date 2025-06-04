@@ -12,4 +12,10 @@ Colors are just set for visibility and object separation, the actual filaments c
 
 If you're running in OpenSCAD and you'd like to use other fonts you can use the options at the end of the customizer, or edit the variables yourself with fonts found on your system.  When running on MakerWorld it uses their built-in font chooser.
 
+Suggested printing tips: Print with a stronger profile than usual for more stiffness in very thin plates.  (For example: Wall loops - 6, infill - 25%.)
+
+![Photograph of single plate printed in black PLA](ProsperoPlate-Single.jpg)
+
+![Photograph of quad plate with text mounted in Prospero unit](ProsperoPlate-4WideWithText.jpg)
+
 Version 1.0 - 2025-06-04

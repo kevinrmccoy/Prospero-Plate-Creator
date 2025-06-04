@@ -10,11 +10,13 @@
 // Number of "units" (empty switch panels) wide.
 number_of_units = 1; // [1:10]
 
+/* #9
 // Is this plate going on the end of the unit?
 end_plate = false;
 
 //If so, is it going on the left end or right end?
 end_position = "left"; // [left, right]
+*/
 
 //Resolution of curves. Higher values give smoother curves but increase rendering time.
 resolution = 100; //[10, 20, 30, 50, 100]
@@ -87,8 +89,11 @@ single_unit_width = 19; // 0.001
 // Center distance for holes from unit to unit (19.304 default) [mm]. (Don't change this unless you're having fit issues.)
 inter_unit_spacing = 19.304; // 0.001
 
+/* 
+// TODO: #9 Refactor end plate code to be more relevant when we add back plate features.
 // Amount to cut off the end if this panel is going on the first or last slots (2.0 default) [mm]. (Don't change this unless you're having fit issues.)
 end_plate_clearance = 2; // 0.01
+*/
 
 /* [Non-MakerWorld Text Options] */
 
@@ -201,6 +206,7 @@ module mounting_holes() {
 	}
 }
 
+/* #9 
 module end_plate_cutoff() {
 	cut_height = plate_thickness + 2 * text_effect_depth + 2 * thin_dim; // This makes sure it really cuts through
 	// This calculation positions the cutoff relative to the edge of the generated plate width.
@@ -214,6 +220,7 @@ module end_plate_cutoff() {
 	translate([pos_of_cutoff_center * end_direction_multiplier, 0, cut_height/2])
 		cube(size=[end_plate_clearance, plate_height + 2 * thin_dim, cut_height], center=true);
 }
+*/
 
 module text_object() {
 	// Z-level of the main flat top surface of the plate (this is below the top taper)
@@ -256,9 +263,6 @@ if (number_of_units > 0) {
 			difference() {
 				plate_body();
 				mounting_holes();
-				if (end_plate) {
-					end_plate_cutoff();
-				}
 				intersection() {
 					text_object();
 					text_bounding_box();
@@ -271,9 +275,6 @@ if (number_of_units > 0) {
 					difference() {
 						text_object();
 						mounting_holes();
-						if (end_plate) {
-							end_plate_cutoff();
-						}
 					}
 					text_bounding_box();
 				}
@@ -285,9 +286,6 @@ if (number_of_units > 0) {
 				difference() {
 					plate_body();
 					mounting_holes();
-					if (end_plate) {
-						end_plate_cutoff();
-					}
 				}
 			}
 			color(text_color) {
@@ -295,9 +293,6 @@ if (number_of_units > 0) {
 					difference() {
 						text_object();
 						mounting_holes();
-						if (end_plate) {
-							end_plate_cutoff();
-						}
 					}
 					text_bounding_box();
 				}
@@ -308,9 +303,6 @@ if (number_of_units > 0) {
 			difference() {
 				plate_body();
 				mounting_holes();
-				if (end_plate) {
-					end_plate_cutoff();
-				}
 			}
 		}
 	}
