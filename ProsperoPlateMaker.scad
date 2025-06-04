@@ -23,6 +23,12 @@ resolution = 100; //[10, 20, 30, 50, 100]
 // Set to true to add text, false to disable.
 enable_text = false;       
 
+// How the text interacts with the plate. (Emboss raises text, deboss lowers text.)
+text_effect = "emboss"; // [emboss, deboss]
+
+// Make multi-color print? (When effect is "deboss" this will fill the debossed part with a separate color.)
+text_separate = false;
+
 // [The text to display on the plate.
 text_string = "Prospero";
 
@@ -30,23 +36,19 @@ text_string = "Prospero";
 text_size = 4; // [1:0.1:20]
 
 // Font name. Ensure it's installed on your system. 
-text_font = "Liberation Sans"; // [Liberation Sans, Open Sans, Raleway]
-// TODO: #1 Add more fonts.
+text_font = "Liberation Sans"; // font
+// If this is used outside of Makerworld it would be helpful to have an enum.
 
+/* Not used on Makerworld
 // Font style, not all fonts support all styles.
 text_font_style = "Regular"; // [Regular, Italic, Bold, Bold Italic]
-// TODO: #2 Decide on this list.
-
-// How the text interacts with the plate. (Can only emboss or deboss for now.)
-text_effect = "emboss"; // [emboss, deboss]
-// TODO: #3 Migrate to BOSL version so that we can add a "flat" option for multi-color.
+*/
 
 // Depth/height for Deboss/Emboss [mm].
 text_effect_depth = 0.4; // [0.1:0.05:2.0]
 
 // Text baseline orientation on the plate.
-text_orientation = "vertical"; // [horizontal, vertical]
-//TODO: #4 Add flips.
+text_rotation = 0; // [0:45:360]
 
 // Horizontal offset from plate center for text's center point [mm].
 text_center_width_offset = 0; // [-40:0.1:40]
@@ -98,9 +100,10 @@ end_plate_clearance = 2; // 0.01
 
 $fn = resolution; // Rendering quality
 thin_dim = 0.01; // A small value used for making hulls or ensuring cuts.
-text_full_font = str(text_font , ":style=", text_font_style); // Font name + style.
-plate_color = "DarkSlateGrey"; // Colors only affect the preview.
-text_color = (text_effect == "emboss") ? "White" : "Black"; // Colors only affect the preview.
+text_full_font = text_font;
+// (Outside of MW use this) text_full_font = str(text_font , ":style=", text_font_style); // Font name + style.
+plate_color = "DarkSlateGrey";
+text_color = (text_separate) ? "White" : plate_color;
 
 // --- Calculate Overall Plate Width ---
 generated_plate_width = (number_of_units <= 0) ? single_unit_width : // Make single plate for unit values below 1.
@@ -145,33 +148,31 @@ module tapered_edge_plan_sketch() {
 
 // Module to create the 3D plate body with tapered edges.
 module plate_body() {
-	color(plate_color) {
-		union() {
-			hull() { // Make bottom of plate
+	union() {
+		hull() { // Make bottom of plate
+			linear_extrude(height = thin_dim) {
+				tapered_edge_plan_sketch();
+			}
+			translate([0,0,actual_taper_z_dim_calc])
 				linear_extrude(height = thin_dim) {
-					tapered_edge_plan_sketch();
+					main_body_plan_sketch();
 				}
-				translate([0,0,actual_taper_z_dim_calc])
-					linear_extrude(height = thin_dim) {
-						main_body_plan_sketch();
-					}
-			}
-			middle_height = plate_thickness - (actual_taper_z_dim_calc * 2);
-			if (middle_height > thin_dim) { // Make middle of plate (Only need to extrude this bit if the overall plate is thicker than the chamfer.)
-				translate([0,0,actual_taper_z_dim_calc])
-					linear_extrude(height = middle_height) main_body_plan_sketch();
-			}
-			
-			hull() { // Make top of plate
-				translate([0,0,plate_thickness - actual_taper_z_dim_calc]) 
-					linear_extrude(height = thin_dim) {
-						main_body_plan_sketch();
-					}
-				translate([0,0,plate_thickness]) 
-					linear_extrude(height = thin_dim) {
-						tapered_edge_plan_sketch(); 
-					}
-			}
+		}
+		middle_height = plate_thickness - (actual_taper_z_dim_calc * 2);
+		if (middle_height > thin_dim) { // Make middle of plate (Only need to extrude this bit if the overall plate is thicker than the chamfer.)
+			translate([0,0,actual_taper_z_dim_calc])
+				linear_extrude(height = middle_height) main_body_plan_sketch();
+		}
+		
+		hull() { // Make top of plate
+			translate([0,0,plate_thickness - actual_taper_z_dim_calc]) 
+				linear_extrude(height = thin_dim) {
+					main_body_plan_sketch();
+				}
+			translate([0,0,plate_thickness]) 
+				linear_extrude(height = thin_dim) {
+					tapered_edge_plan_sketch(); 
+				}
 		}
 	}
 }
@@ -220,19 +221,17 @@ module text_object() {
 
 	translate([text_center_width_offset, text_center_height_offset, z_pos_text_base_val]) {
 		// Apply rotation for vertical text orientation
-		object_rotation = (text_orientation == "vertical") ? [0, 0, 90] : [0, 0, 0];
+		object_rotation = [0, 0, text_rotation];
 		
 		rotate(object_rotation) {
-			color(text_color) {
-				linear_extrude(height = text_extrude_val) {
-					text(text_string, 
-						size = text_size, 
-						font = text_full_font, 
-						halign = text_halign, 
-						valign = text_valign,
-						spacing = text_spacing
-						);
-				}
+			linear_extrude(height = text_extrude_val) {
+				text(text_string, 
+					size = text_size, 
+					font = text_full_font, 
+					halign = text_halign, 
+					valign = text_valign,
+					spacing = text_spacing
+					);
 			}
 		}
 	}
@@ -241,31 +240,44 @@ module text_object() {
 // --- Main Assembly ---
 if (number_of_units > 0) {
 	if (enable_text && (text_effect == "deboss")) {
-		difference() {
-			plate_body();
-			mounting_holes();
-			if (end_plate) {
-				end_plate_cutoff();
-			}
-			text_object();
-		}
-	} else if (enable_text && (text_effect == "emboss")) {
-		union() {
+		color(plate_color) {
 			difference() {
 				plate_body();
 				mounting_holes();
 				if (end_plate) {
 					end_plate_cutoff();
 				}
+				text_object();
 			}
-			text_object();
+		}
+		if (text_separate) {
+			color(text_color) {
+				text_object();
+			}
+		}
+	} else if (enable_text && (text_effect == "emboss")) {
+		union() {
+			color(plate_color) {
+				difference() {
+					plate_body();
+					mounting_holes();
+					if (end_plate) {
+						end_plate_cutoff();
+					}
+				}
+			}
+			color(text_color) {
+				text_object();
+			}
 		}
 	} else { // No text enabled, or an unhandled text_effect
-		difference() {
-			plate_body();
-			mounting_holes();
-			if (end_plate) {
-				end_plate_cutoff();
+		color(plate_color) {
+			difference() {
+				plate_body();
+				mounting_holes();
+				if (end_plate) {
+					end_plate_cutoff();
+				}
 			}
 		}
 	}
