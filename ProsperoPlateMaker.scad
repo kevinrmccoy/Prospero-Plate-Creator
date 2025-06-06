@@ -42,6 +42,7 @@ text_font_mw = "Liberation Sans"; // font
 
 // Depth/height for deboss/emboss [mm].
 text_effect_depth = 0.4; // [0.1:0.05:2.0]
+text_effect_depth_effective = ((text_effect == "deboss") && (text_effect_depth > plate_thickness)) ? plate_thickness : text_effect_depth;
 
 // Text baseline orientation on the plate.
 text_rotation = 90; // [0:45:360]
@@ -211,7 +212,7 @@ module plate_body() {
 // Module to create the mounting holes for all units
 module mounting_holes() {
 	hole_radius = hole_diameter / 2;
-	hole_cut_height = plate_thickness + 2 * text_effect_depth + 2 * thin_dim; // This makes sure it really cuts through
+	hole_cut_height = plate_thickness + 2 * text_effect_depth_effective + 2 * thin_dim; // This makes sure it really cuts through
 	
 	// Loop through each unit to place its pair of holes
 	for (i = [0 : max(0, number_of_units - 1)]) { 
@@ -228,29 +229,13 @@ module mounting_holes() {
 	}
 }
 
-/* #9 
-module end_plate_cutoff() {
-	cut_height = plate_thickness + 2 * text_effect_depth + 2 * thin_dim; // This makes sure it really cuts through
-	// This calculation positions the cutoff relative to the edge of the generated plate width.
-	// If end_plate_clearance is, for example, 2mm, it cuts 2mm off one side.
-	// The center of this 2mm wide cutting cube needs to be at (generated_plate_width/2 - end_plate_clearance/2).
-
-	pos_of_cutoff_center = (generated_plate_width/2) - (end_plate_clearance/2);
-	
-	end_direction_multiplier = (end_position == "left") ? -1 : 1; // Assuming "left" means - side, "right" means + side
-
-	translate([pos_of_cutoff_center * end_direction_multiplier, 0, cut_height/2])
-		cube(size=[end_plate_clearance, plate_height + 2 * thin_dim, cut_height], center=true);
-}
-*/
-
 module text_object() {
 	// Z-level of the main flat top surface of the plate (this is below the top taper)
 	// Text will be placed relative to this surface.
 	front_face_z_level = plate_thickness;
 
-	text_extrude_val = (text_effect == "deboss") ? text_effect_depth + 2 * thin_dim : text_effect_depth;
-	z_pos_text_base_val = (text_effect == "emboss") ? front_face_z_level : front_face_z_level - text_effect_depth;
+	text_extrude_val = (text_effect == "deboss") ? text_effect_depth_effective + 2 * thin_dim : text_effect_depth_effective;
+	z_pos_text_base_val = (text_effect == "emboss") ? front_face_z_level : front_face_z_level - text_effect_depth_effective;
 
 	translate([text_center_width_offset, text_center_height_offset, z_pos_text_base_val]) {
 		// Apply rotation for vertical text orientation
@@ -272,7 +257,7 @@ module text_object() {
 
 module decoration_bounding_box() {
 	// Makes a bounding box for allowable text placement.
-	box_height = plate_thickness + 2 * text_effect_depth + 2 * thin_dim;
+	box_height = plate_thickness + 2 * max(0,text_effect_depth_effective) + 2 * thin_dim;
 	difference() {
 		linear_extrude(height = box_height) {
 			tapered_edge_plan_sketch();
@@ -318,7 +303,6 @@ if (number_of_units > 0) {
 				text_object();
 				decoration_bounding_box();
 			}
-
 		} 
 	}
 } else {
