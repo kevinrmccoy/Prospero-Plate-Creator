@@ -66,6 +66,9 @@ text_spacing = 1; // [1:0.05:5]
 // Set to true to include an SVG.
 enable_svg = false;
 
+// SVG file
+svg_file = "default.svg";
+
 // How the SVG interacts with the plate.
 svg_effect = "emboss"; // [emboss, deboss]
 
@@ -74,9 +77,13 @@ svg_separate = false;
 
 // Depth/height for deboss/emboss [mm].
 svg_effect_depth = 0.4; // [0.1:0.05:2.0]
+svg_effect_depth_effective = ((svg_effect == "deboss") && (svg_effect_depth > plate_thickness)) ? plate_thickness : svg_effect_depth;
 
 // SVG orientation on the plate.
 svg_rotation = 90; // [0:45:360]
+
+// SVG size
+svg_scale = 1; // [0:0.1:5]
 
 // Horizontal offset from plate center for SVG's center point [mm].
 svg_center_width_offset = 0; // [-40:0.1:40]
@@ -135,7 +142,8 @@ $fn = resolution; // Rendering quality
 thin_dim = 0.01; // A small value used for making hulls or ensuring cuts.
 text_full_font = local_font ? str(text_font , ":style=", text_font_style) : text_font_mw;
 plate_color = "DarkSlateGrey";
-text_color = (text_separate) ? "White" : plate_color;
+text_color = "White";
+svg_color = "Yellow";
 
 // --- Calculate Overall Plate Width ---
 generated_plate_width = (number_of_units <= 0) ? single_unit_width : // Make single plate for unit values below 1.
@@ -255,9 +263,30 @@ module text_object() {
 	}
 }
 
+module svg_object() {
+	front_face_z_level = plate_thickness;
+
+	svg_extrude_val = (svg_effect == "deboss") ? svg_effect_depth_effective + 2 * thin_dim : svg_effect_depth_effective;
+	z_pos_svg_base_val = (svg_effect == "emboss") ? front_face_z_level : front_face_z_level - svg_effect_depth_effective;
+
+	translate([svg_center_width_offset, svg_center_height_offset, z_pos_svg_base_val]) {
+		// Apply rotation for vertical text orientation
+		svg_object_rotation = [0, 0, text_rotation];
+
+		rotate(svg_object_rotation) {
+			scale(svg_scale) {
+				linear_extrude(height = svg_extrude_val) {
+					import(file = svg_file, center = true);
+				}
+			}
+		}
+	}
+
+}
+
 module decoration_bounding_box() {
 	// Makes a bounding box for allowable text placement.
-	box_height = plate_thickness + 2 * max(0,text_effect_depth_effective) + 2 * thin_dim;
+	box_height = plate_thickness + 2 * max(0,text_effect_depth_effective, svg_effect_depth_effective) + 2 * thin_dim;
 	difference() {
 		linear_extrude(height = box_height) {
 			tapered_edge_plan_sketch();
@@ -288,6 +317,14 @@ if (number_of_units > 0) {
 						decoration_bounding_box();
 					}
 				}
+				if (enable_svg && (svg_effect == "emboss") && !svg_separate) {
+					intersection() {
+						// Make svg object that exists only above the plate
+						svg_object();
+						decoration_bounding_box();
+					}
+				}
+
 			}
 			// Subtract mounting holes
 			mounting_holes();
@@ -295,6 +332,10 @@ if (number_of_units > 0) {
 			if (enable_text && (text_effect == "deboss")) {
 				text_object();
 			}
+			if (enable_svg && (svg_effect == "deboss")) {
+				svg_object();
+			}
+
 		}
 	}
 	if ((enable_text) && (text_separate)) {
@@ -305,6 +346,15 @@ if (number_of_units > 0) {
 			}
 		} 
 	}
+	if ((enable_svg) && (svg_separate)) {
+		color(svg_color) {
+			intersection() { // Make svg object that exists only above the plate
+				svg_object();
+				decoration_bounding_box();
+			}
+		} 
+	}
+
 } else {
 	%cube(1); // Show a small cube if number_of_units is invalid, to indicate an issue.
 			  // The % highlights it in purple in OpenSCAD preview.
