@@ -40,7 +40,7 @@ text_size = 4; // [1:0.1:20]
 // Font name and style.
 text_font_mw = "Liberation Sans"; // font
 
-// Depth/height for Deboss/Emboss [mm].
+// Depth/height for deboss/emboss [mm].
 text_effect_depth = 0.4; // [0.1:0.05:2.0]
 
 // Text baseline orientation on the plate.
@@ -60,6 +60,28 @@ text_valign = "center"; // ["top", "center", "baseline", "bottom"]
 
 // Text spacing between characters.
 text_spacing = 1; // [1:0.05:5]
+
+/* [SVG Parameters] */
+// Set to true to include an SVG.
+enable_svg = false;
+
+// How the SVG interacts with the plate.
+svg_effect = "emboss"; // [emboss, deboss]
+
+// Make multi-color print? (When effect is "deboss" this will fill the debossed part with a separate color.)
+svg_separate = false;
+
+// Depth/height for deboss/emboss [mm].
+svg_effect_depth = 0.4; // [0.1:0.05:2.0]
+
+// SVG orientation on the plate.
+svg_rotation = 90; // [0:45:360]
+
+// Horizontal offset from plate center for SVG's center point [mm].
+svg_center_width_offset = 0; // [-40:0.1:40]
+
+// Vertical offset from plate center for SVG's center point [mm].
+svg_center_height_offset = 0; // [-50:0.1:50]
 
 /* [Advanced User Parameters] */
 // Total thickness of the plate [mm]. (1.2 default)
@@ -248,63 +270,56 @@ module text_object() {
 	}
 }
 
-module text_bounding_box() {
+module decoration_bounding_box() {
 	// Makes a bounding box for allowable text placement.
 	box_height = plate_thickness + 2 * text_effect_depth + 2 * thin_dim;
-	linear_extrude(height = box_height) {
-		tapered_edge_plan_sketch();
+	difference() {
+		linear_extrude(height = box_height) {
+			tapered_edge_plan_sketch();
+		}
+		mounting_holes();
+	}
+}
+
+module null_object() {
+	// Makes a thin object out of the way used as a placeholder
+	z_distance = plate_thickness;
+	translate(0,0,-z_distance) {
+		linear_extrude(height = thin_dim);
 	}
 }
 
 // --- Main Assembly ---
 if (number_of_units > 0) {
-	if (enable_text && (text_effect == "deboss")) {
-		color(plate_color) {
-			difference() {
+	color(plate_color) {
+		difference() {
+			// Start with plate body with embossed non-separate items
+			union() {
 				plate_body();
-				mounting_holes();
-				intersection() {
-					text_object();
-					text_bounding_box();
-				}
-			}
-		}
-		if (text_separate) {
-			color(text_color) {
-				intersection() {
-					difference() {
+				if (enable_text && (text_effect == "emboss") && !text_separate) {
+					intersection() {
+						// Make text object that exists only above the plate
 						text_object();
-						mounting_holes();
+						decoration_bounding_box();
 					}
-					text_bounding_box();
 				}
 			}
-		}
-	} else if (enable_text && (text_effect == "emboss")) {
-		union() {
-			color(plate_color) {
-				difference() {
-					plate_body();
-					mounting_holes();
-				}
-			}
-			color(text_color) {
-				intersection() {
-					difference() {
-						text_object();
-						mounting_holes();
-					}
-					text_bounding_box();
-				}
+			// Subtract mounting holes
+			mounting_holes();
+			// Subtract debossed items
+			if (enable_text && (text_effect == "deboss")) {
+				text_object();
 			}
 		}
-	} else { // No text enabled, or an unhandled text_effect
-		color(plate_color) {
-			difference() {
-				plate_body();
-				mounting_holes();
+	}
+	if ((enable_text) && (text_separate)) {
+		color(text_color) {
+			intersection() { // Make text object that exists only above the plate
+				text_object();
+				decoration_bounding_box();
 			}
-		}
+
+		} 
 	}
 } else {
 	%cube(1); // Show a small cube if number_of_units is invalid, to indicate an issue.
