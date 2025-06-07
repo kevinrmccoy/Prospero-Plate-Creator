@@ -42,7 +42,6 @@ text_font_mw = "Liberation Sans"; // font
 
 // Depth/height for deboss/emboss [mm].
 text_effect_depth = 0.4; // [0.1:0.05:2.0]
-text_effect_depth_effective = ((text_effect == "deboss") && (text_effect_depth > plate_thickness)) ? plate_thickness : text_effect_depth;
 
 // Text baseline orientation on the plate.
 text_rotation = 90; // [0:45:360]
@@ -77,13 +76,12 @@ svg_separate = false;
 
 // Depth/height for deboss/emboss [mm].
 svg_effect_depth = 0.4; // [0.1:0.05:2.0]
-svg_effect_depth_effective = ((svg_effect == "deboss") && (svg_effect_depth > plate_thickness)) ? plate_thickness : svg_effect_depth;
 
 // SVG orientation on the plate.
 svg_rotation = 90; // [0:45:360]
 
 // SVG size
-svg_scale = 1; // [0:0.1:5]
+svg_scale = 0.1; // [0.01:0.01:3]
 
 // Horizontal offset from plate center for SVG's center point [mm].
 svg_center_width_offset = 0; // [-40:0.1:40]
@@ -141,6 +139,8 @@ text_font_style = "Regular"; // [Regular, Italic, Bold, Bold Italic]
 $fn = resolution; // Rendering quality
 thin_dim = 0.01; // A small value used for making hulls or ensuring cuts.
 text_full_font = local_font ? str(text_font , ":style=", text_font_style) : text_font_mw;
+text_effect_depth_effective = ((text_effect == "deboss") && (text_effect_depth > plate_thickness)) ? plate_thickness : text_effect_depth;
+svg_effect_depth_effective = ((svg_effect == "deboss") && (svg_effect_depth > plate_thickness)) ? plate_thickness : svg_effect_depth;
 plate_color = "DarkSlateGrey";
 text_color = "White";
 svg_color = "Yellow";
@@ -270,13 +270,13 @@ module svg_object() {
 	z_pos_svg_base_val = (svg_effect == "emboss") ? front_face_z_level : front_face_z_level - svg_effect_depth_effective;
 
 	translate([svg_center_width_offset, svg_center_height_offset, z_pos_svg_base_val]) {
-		// Apply rotation for vertical text orientation
-		svg_object_rotation = [0, 0, text_rotation];
+		svg_object_rotation = [0, 0, svg_rotation];
+		svg_object_scaling = [svg_scale, svg_scale, 1];
 
 		rotate(svg_object_rotation) {
-			scale(svg_scale) {
+			scale(svg_object_scaling) {
 				linear_extrude(height = svg_extrude_val) {
-					import(file = svg_file, center = true);
+					import(file = svg_file, center=true);
 				}
 			}
 		}
