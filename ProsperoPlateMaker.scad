@@ -89,6 +89,37 @@ svg_center_width_offset = 0; // [-40:0.1:40]
 // Vertical offset from plate center for SVG's center point [mm].
 svg_center_height_offset = 0; // [-50:0.1:50]
 
+/* [PNG Parameters] */
+// Set to true to include a PNG.
+enable_png = false;
+
+// PNG file
+png_file = "default.png";
+
+// How the PNG interacts with the plate.
+png_effect = "emboss"; // [emboss, deboss]
+
+// Make multi-color print? (When effect is "deboss" this will fill the debossed part with a separate color.)
+png_separate = false;
+
+// Max depth/height for deboss/emboss [mm].
+png_effect_depth = 0.4; // [0.1:0.05:2.0]
+
+// PNG size (at scale 0.1, 10 pixels is 1 mm).
+png_scale = 0.1; // [0.01:0.01:3]
+
+// PNG orientation on the plate.
+png_rotation = 90; // [0:45:360]
+
+// Horizontal offset from plate center for png's center point [mm].
+png_center_width_offset = 0; // [-40:0.1:40]
+
+// Vertical offset from plate center for png's center point [mm].
+png_center_height_offset = 0; // [-50:0.1:50]
+
+// Invert PNG colors (when false, white in the PNG is highest/deepest).
+png_invert = false;
+
 /* [Advanced User Parameters] */
 // Total thickness of the plate [mm]. (1.2 default)
 plate_thickness = 1.2; // [0.8:0.05:2.0]
@@ -141,9 +172,13 @@ thin_dim = 0.01; // A small value used for making hulls or ensuring cuts.
 text_full_font = local_font ? str(text_font , ":style=", text_font_style) : text_font_mw;
 text_effect_depth_effective = ((text_effect == "deboss") && (text_effect_depth > plate_thickness)) ? plate_thickness : text_effect_depth;
 svg_effect_depth_effective = ((svg_effect == "deboss") && (svg_effect_depth > plate_thickness)) ? plate_thickness : svg_effect_depth;
+png_effect_depth_effective = ((png_effect == "deboss") && (png_effect_depth > plate_thickness)) ? plate_thickness : png_effect_depth;
+safe_bound_height = plate_thickness + 2 * max(0,text_effect_depth_effective, svg_effect_depth_effective, png_effect_depth_effective) + 2 * thin_dim;
 plate_color = "DarkSlateGrey";
 text_color = "White";
 svg_color = "Yellow";
+png_color = "Pink";
+png_depth_scale = png_effect_depth / 100;
 
 // --- Calculate Overall Plate Width ---
 generated_plate_width = (number_of_units <= 0) ? single_unit_width : // Make single plate for unit values below 1.
@@ -220,7 +255,7 @@ module plate_body() {
 // Module to create the mounting holes for all units
 module mounting_holes() {
 	hole_radius = hole_diameter / 2;
-	hole_cut_height = plate_thickness + 2 * text_effect_depth_effective + 2 * thin_dim; // This makes sure it really cuts through
+	hole_cut_height = safe_bound_height;
 	
 	// Loop through each unit to place its pair of holes
 	for (i = [0 : max(0, number_of_units - 1)]) { 
@@ -284,9 +319,41 @@ module svg_object() {
 
 }
 
+module png_object() {
+	front_face_z_level = plate_thickness;
+	z_pos_png_base_val = (png_effect == "emboss") ? front_face_z_level : front_face_z_level + thin_dim;
+	png_flip = (png_effect == "emboss") ? 0 : 180;
+	scaled_plate_width = generated_plate_width / png_scale;
+	scaled_plate_height = plate_height / png_scale;
+
+	translate([png_center_width_offset, png_center_height_offset, z_pos_png_base_val]) {
+		png_object_rotation = [png_flip, 0, png_rotation];
+		png_object_scaling = [png_scale, png_scale, png_depth_scale];
+
+		echo(png_invert=png_invert);
+		rotate(png_object_rotation) {
+			scale(png_object_scaling) {
+				difference() { // This cuts off the 1 unit "footprint" imposed under the image by the surface cmd.
+					surface(file = png_file, center = true, invert = png_invert);
+					translate([0,0,-1]) {
+						cube([scaled_plate_width,scaled_plate_height,1]);
+					}
+				}
+			}
+		}
+		        difference() {
+            surface("default.png", center = false, invert = false);
+            translate([0,0,-1]) {
+                cube([300,300,1]);
+            }
+        }
+
+	}
+}
+
 module decoration_bounding_box() {
 	// Makes a bounding box for allowable text placement.
-	box_height = plate_thickness + 2 * max(0,text_effect_depth_effective, svg_effect_depth_effective) + 2 * thin_dim;
+	box_height = safe_bound_height;
 	difference() {
 		linear_extrude(height = box_height) {
 			tapered_edge_plan_sketch();
@@ -324,6 +391,13 @@ if (number_of_units > 0) {
 						decoration_bounding_box();
 					}
 				}
+				if (enable_png && (png_effect == "emboss") && !png_separate) {
+					intersection() {
+						// Make png object that exists only above the plate
+						png_object();
+						decoration_bounding_box();
+					}
+				}
 
 			}
 			// Subtract mounting holes
@@ -334,6 +408,9 @@ if (number_of_units > 0) {
 			}
 			if (enable_svg && (svg_effect == "deboss")) {
 				svg_object();
+			}
+			if (enable_png && (png_effect == "deboss")) {
+				png_object();
 			}
 
 		}
@@ -350,6 +427,14 @@ if (number_of_units > 0) {
 		color(svg_color) {
 			intersection() { // Make svg object that exists only above the plate
 				svg_object();
+				decoration_bounding_box();
+			}
+		} 
+	}
+	if ((enable_png) && (png_separate)) {
+		color(png_color) {
+			intersection() { // Make png object that exists only above the plate
+				png_object();
 				decoration_bounding_box();
 			}
 		} 
