@@ -10,14 +10,6 @@
 // Number of "units" (empty switch panels) wide.
 number_of_units = 1; // [1:10]
 
-/* #9
-// Is this plate going on the end of the unit?
-end_plate = false;
-
-//If so, is it going on the left end or right end?
-end_position = "left"; // [left, right]
-*/
-
 //Resolution of curves. Higher values give smoother curves but increase rendering time.
 resolution = 100; //[10, 20, 30, 50, 100]
 
@@ -65,7 +57,7 @@ text_spacing = 1; // [1:0.05:5]
 // Set to true to include an SVG.
 enable_svg = false;
 
-// SVG file
+// SVG file -- see notes for file info.
 svg_file = "default.svg";
 
 // How the SVG interacts with the plate.
@@ -93,7 +85,7 @@ svg_center_height_offset = 0; // [-50:0.1:50]
 // Set to true to include a PNG.
 enable_png = false;
 
-// PNG file
+// PNG file -- see notes for file info.
 png_file = "default.png";
 
 // How the PNG interacts with the plate.
@@ -116,9 +108,6 @@ png_center_width_offset = 0; // [-40:0.1:40]
 
 // Vertical offset from plate center for png's center point [mm].
 png_center_height_offset = 0; // [-50:0.1:50]
-
-// Invert PNG colors (when false, white in the PNG is highest/deepest).
-png_invert = false;
 
 /* [Advanced User Parameters] */
 // Total thickness of the plate [mm]. (1.2 default)
@@ -147,12 +136,6 @@ single_unit_width = 19; // 0.001
 
 // Center distance for holes from unit to unit (19.304 default) [mm]. (Don't change this unless you're having fit issues.)
 inter_unit_spacing = 19.304; // 0.001
-
-/* 
-// TODO: #9 Refactor end plate code to be more relevant when we add back plate features.
-// Amount to cut off the end if this panel is going on the first or last slots (2.0 default) [mm]. (Don't change this unless you're having fit issues.)
-end_plate_clearance = 2; // 0.01
-*/
 
 /* [Non-MakerWorld Text Options] */
 
@@ -322,32 +305,28 @@ module svg_object() {
 module png_object() {
 	front_face_z_level = plate_thickness;
 	z_pos_png_base_val = (png_effect == "emboss") ? front_face_z_level : front_face_z_level + thin_dim;
-	png_flip = (png_effect == "emboss") ? 0 : 180;
+	png_mirroring = [0, 0, png_effect == "deboss" ? 1 : 0];
 	scaled_plate_width = generated_plate_width / png_scale;
 	scaled_plate_height = plate_height / png_scale;
+	png_object_rotation = png_rotation;
+	png_object_scaling = [png_scale, png_scale, png_depth_scale];
 
-	translate([png_center_width_offset, png_center_height_offset, z_pos_png_base_val]) {
-		png_object_rotation = [png_flip, 0, png_rotation];
-		png_object_scaling = [png_scale, png_scale, png_depth_scale];
-
-		echo(png_invert=png_invert);
-		rotate(png_object_rotation) {
-			scale(png_object_scaling) {
-				difference() { // This cuts off the 1 unit "footprint" imposed under the image by the surface cmd.
-					surface(file = png_file, center = true, invert = png_invert);
-					translate([0,0,-1]) {
-						cube([scaled_plate_width,scaled_plate_height,1]);
+	intersection() {
+		translate([png_center_width_offset, png_center_height_offset, z_pos_png_base_val]) {
+			rotate(png_object_rotation) {
+				scale(png_object_scaling) {
+					mirror(png_mirroring) {
+						difference() { // This cuts off the 1 unit "footprint" imposed under the image by the surface cmd.
+							surface(file = png_file, center = true, invert = false);
+							translate([0,0,-0.5]) {
+								cube(size = [scaled_plate_width*2, scaled_plate_height*2, 1], center = true);
+							}
+						}
 					}
 				}
 			}
 		}
-		        difference() {
-            surface("default.png", center = false, invert = false);
-            translate([0,0,-1]) {
-                cube([300,300,1]);
-            }
-        }
-
+		decoration_bounding_box();
 	}
 }
 
@@ -371,7 +350,12 @@ module null_object() {
 }
 
 // --- Main Assembly ---
-if (number_of_units > 0) {
+if (false) {
+	echo("test branch");
+//	#plate_body();
+	png_object();
+} else if (number_of_units > 0) {
+	echo("normal");
 	color(plate_color) {
 		difference() {
 			// Start with plate body with embossed non-separate items
