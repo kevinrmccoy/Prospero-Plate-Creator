@@ -34,7 +34,6 @@ Combining the text, SVG, and PNG features might result in strange results, check
 
 Suggested printing tips: Print with a stronger profile than usual for more stiffness in very thin plates.  (For example: Wall loops - 6, infill - 25%.)
 
-
 ![Photograph of single plate printed in black PLA](ProsperoPlate-Single.jpg)
 
 ![Photograph of quad plate with text mounted in Prospero unit](ProsperoPlate-4WideWithText.jpg)
