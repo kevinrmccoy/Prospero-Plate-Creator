@@ -1,0 +1,7 @@
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <path id="star" d="M100,25 L125,75 L180,75 L140,115 L155,170 L100,140 L45,170 L60,115 L20,75 L75,75 Z" />
+  </defs>
+
+  <use href="#star" fill="black" />
+</svg>
