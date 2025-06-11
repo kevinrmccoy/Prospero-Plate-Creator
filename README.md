@@ -40,6 +40,10 @@ Suggested printing tips: Print with a stronger profile than usual for more stiff
 
 ## Version History
 
+Version 1.21 - 2025-06-10
+
+- Improve PNG deboss feature
+
 Version 1.2 - 2025-06-09
 
 - Add SVG and PNG features

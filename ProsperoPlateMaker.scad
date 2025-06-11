@@ -304,7 +304,7 @@ module svg_object() {
 
 module png_object() {
 	front_face_z_level = plate_thickness;
-	z_pos_png_base_val = (png_effect == "emboss") ? front_face_z_level : front_face_z_level + thin_dim;
+	z_pos_png_base_val = (png_effect == "emboss") ? front_face_z_level : front_face_z_level + 2*thin_dim;
 	png_mirroring = [0, 0, png_effect == "deboss" ? 1 : 0];
 	scaled_plate_width = generated_plate_width / png_scale;
 	scaled_plate_height = plate_height / png_scale;
@@ -318,7 +318,7 @@ module png_object() {
 					mirror(png_mirroring) {
 						difference() { // This cuts off the 1 unit "footprint" imposed under the image by the surface cmd.
 							surface(file = png_file, center = true, invert = false);
-							translate([0,0,-0.5]) {
+							translate([0,0,-0.50]) {
 								cube(size = [scaled_plate_width*2, scaled_plate_height*2, 1], center = true);
 							}
 						}
@@ -350,12 +350,11 @@ module null_object() {
 }
 
 // --- Main Assembly ---
-if (false) {
+if (test_branch) {
 	echo("test branch");
 //	#plate_body();
 	png_object();
 } else if (number_of_units > 0) {
-	echo("normal");
 	color(plate_color) {
 		difference() {
 			// Start with plate body with embossed non-separate items
