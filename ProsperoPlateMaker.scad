@@ -10,6 +10,9 @@
 // Number of "units" (empty switch panels) wide.
 number_of_units = 1; // [1:10]
 
+// Make only the corner mounting holes, rather than for every plate position?
+corner_holes_only = false;
+
 //Resolution of curves. Higher values give smoother curves but increase rendering time.
 resolution = 100; //[10, 20, 30, 50, 100]
 
@@ -150,6 +153,7 @@ text_font_style = "Regular"; // [Regular, Italic, Bold, Bold Italic]
 
 /* [Hidden] */
 
+test_mode = false;
 $fn = resolution; // Rendering quality
 thin_dim = 0.01; // A small value used for making hulls or ensuring cuts.
 text_full_font = local_font ? str(text_font , ":style=", text_font_style) : text_font_mw;
@@ -248,10 +252,12 @@ module mounting_holes() {
 								(i - (number_of_units - 1) / 2) * inter_unit_spacing;
 
 		// Create the pair of holes (spaced along long axis by hole_spacing) for the current unit at its calculated center.
-		translate([current_unit_width_center, hole_spacing/2, hole_cut_height/2]) 
-			cylinder(r = hole_radius, h = hole_cut_height, center=true);
-		translate([current_unit_width_center, -hole_spacing/2, hole_cut_height/2]) 
-			cylinder(r = hole_radius, h = hole_cut_height, center=true);
+		if ((i == 0) || (i == (number_of_units - 1)) || (corner_holes_only == false)) {
+			translate([current_unit_width_center, hole_spacing/2, hole_cut_height/2]) 
+				cylinder(r = hole_radius, h = hole_cut_height, center=true);
+			translate([current_unit_width_center, -hole_spacing/2, hole_cut_height/2]) 
+				cylinder(r = hole_radius, h = hole_cut_height, center=true);
+		}
 	}
 }
 
@@ -350,10 +356,8 @@ module null_object() {
 }
 
 // --- Main Assembly ---
-if (test_branch) {
-	echo("test branch");
-//	#plate_body();
-	png_object();
+if (test_mode) {
+	echo("test mode");
 } else if (number_of_units > 0) {
 	color(plate_color) {
 		difference() {
