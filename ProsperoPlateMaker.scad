@@ -13,8 +13,17 @@ number_of_units = 1; // [1:10]
 // Make only the corner mounting holes, rather than for every plate position?
 corner_holes_only = false;
 
-//Resolution of curves. Higher values give smoother curves but increase rendering time.
+// Resolution of curves. Higher values give smoother curves but increase rendering time.
 resolution = 100; //[10, 20, 30, 50, 100]
+
+// Enable to cut holes for the switch and LED (for a single switch configuration.)
+electronics_holes = false;
+
+// LED hole diameter. (6.15 for mounting the LED to this plate, 7.62 is default for slipping this plate over the LED lens.) [mm]
+led_hole_diameter = 7.62; // 0.001
+
+// Total thickness of the plate [mm]. (1.2 default for blank plates, try 0.6 for a label that goes over an existing plate (hold in place using the switch nut.))
+plate_thickness = 1.2; // [0.6:0.05:2.0]
 
 /* [Text Parameters] */
 // Set to true to add text, false to disable.
@@ -113,9 +122,6 @@ png_center_width_offset = 0; // [-40:0.1:40]
 png_center_height_offset = 0; // [-50:0.1:50]
 
 /* [Advanced User Parameters] */
-// Total thickness of the plate [mm]. (1.2 default)
-plate_thickness = 1.2; // [0.8:0.05:2.0]
-
 // Diameter of mounting holes [mm]. (3.25 default)
 hole_diameter = 3.25; // [1:0.01:5]
 
@@ -128,17 +134,26 @@ corner_fillet_radius = 0.5; // [0:0.05:1]
 /* [Prospero Fit Parameters] */
 // Don't change these unless you're having fit issues.
 
-// Height of the plate (79.5 default) [mm]. (Don't change this unless you're having fit issues.)
+// Height of the plate (79.5 default) [mm].
 plate_height = 79.5; // 0.1
 
-// Distance between the centers of a pair of mounting holes for a single unit (71.438 default) [mm]. (Don't change this unless you're having fit issues.)
+// Distance between the centers of a pair of mounting holes for a single unit (71.438 default) [mm].
 hole_spacing = 71.438; // 0.001
 
-// Width for a single unit. (19 default) [mm]. (Don't change this unless you're having fit issues.)
+// Width for a single unit. (19 default) [mm].
 single_unit_width = 19; // 0.001
 
-// Center distance for holes from unit to unit (19.304 default) [mm]. (Don't change this unless you're having fit issues.)
+// Center distance for holes from unit to unit (19.304 default) [mm].
 inter_unit_spacing = 19.304; // 0.001
+
+// Distance from the bottom of the plate to the center of the switch hole. (30.35 default) [mm].
+switch_hole_spacing = 30.35; // 0.001
+
+// Switch hole diameter. (12.30 default) [mm].
+switch_hole_diameter = 12.30; // 0.01
+
+// Distance from the top of the plate to the center of the LED hole. (11.975 default) [mm].
+led_hole_spacing = 11.975; // 0.001
 
 /* [Non-MakerWorld Text Options] */
 
@@ -150,6 +165,11 @@ text_font = "Liberation Sans"; // [Liberation Mono, Liberation Sans, Liberation 
 
 // Font style, not all fonts support all styles.
 text_font_style = "Regular"; // [Regular, Italic, Bold, Bold Italic]
+
+/* [Experimental] */
+
+// Include holes for switch (clamp nut over this plate) and LED (this plate slides over LED lens.) (For printing a label to go over an existing metal plate.)
+overlay_style = false;
 
 /* [Hidden] */
 
@@ -259,6 +279,30 @@ module mounting_holes() {
 				cylinder(r = hole_radius, h = hole_cut_height, center=true);
 		}
 	}
+}
+
+module electronics_holes() {
+	led_hole_radius = led_hole_diameter / 2;
+	led_hole_center = (plate_height / 2) - led_hole_spacing;
+	switch_hole_radius = switch_hole_diameter / 2;
+	switch_hole_center = (plate_height / 2) - switch_hole_spacing;
+	hole_cut_height = safe_bound_height;
+
+	for (i = [0 : max(0, number_of_units - 1)]) { 
+	// Calculate Y offset for the center of the current unit's hole pattern.
+	// The pattern of unit centers is itself centered around Y=0.
+	current_unit_width_center = (number_of_units == 1) ? 0 : 
+							(i - (number_of_units - 1) / 2) * inter_unit_spacing;
+
+	// Create the pair of holes (spaced along long axis by hole_spacing) for the current unit at its calculated center.
+		if ((i == 0) || (i == (number_of_units - 1))) {
+			translate([current_unit_width_center, led_hole_center, hole_cut_height/2]) 
+				cylinder(r = led_hole_radius, h = hole_cut_height, center=true);
+			translate([current_unit_width_center, -switch_hole_center, hole_cut_height/2]) 
+				cylinder(r = switch_hole_radius, h = hole_cut_height, center=true);
+		}
+	}
+
 }
 
 module text_object() {
@@ -389,6 +433,10 @@ if (test_mode) {
 			}
 			// Subtract mounting holes
 			mounting_holes();
+			// Subtract electronics holes
+			if (electronics_holes) {
+				electronics_holes();
+			}
 			// Subtract debossed items
 			if (enable_text && (text_effect == "deboss")) {
 				text_object();
