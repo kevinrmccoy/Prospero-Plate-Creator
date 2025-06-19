@@ -8,7 +8,7 @@
 
 /* [User Parameters] */
 // Number of "units" (empty switch panels) wide.
-number_of_units = 1; // [1:10]
+number_of_units = 4; // [1:10]
 
 // Make only the corner mounting holes, rather than for every plate position?
 corner_holes_only = false;
@@ -25,45 +25,85 @@ led_hole_diameter = 7.62; // 0.001
 // Total thickness of the plate [mm]. (1.2 default for blank plates, try 0.6 for a label that goes over an existing plate (hold in place using the switch nut.))
 plate_thickness = 1.2; // [0.6:0.05:2.0]
 
-/* [Text Parameters] */
-// Set to true to add text, false to disable.
-enable_text = false;       
+/* [Full Plate Text Parameters] */
+// Set to true to add text to the full plate, false to disable.
+enable_text_full = false;       
 
 // How the text interacts with the plate. (Emboss raises text, deboss lowers text.)
-text_effect = "emboss"; // [emboss, deboss]
+text_full_effect = "emboss"; // [emboss, deboss]
 
 // Make multi-color print? (When effect is "deboss" this will fill the debossed part with a separate color.)
-text_separate = false;
+text_full_separate = false;
 
-// [The text to display on the plate.
-text_string = "Prospero";
+// The text to display on the plate.
+text_full_string = "Prospero";
 
 // Font size. [mm]
-text_size = 4; // [1:0.1:20]
+text_full_size = 4; // [1:0.1:20]
 
 // Font name and style.
-text_font_mw = "Liberation Sans"; // font
+text_full_font_mw = "Liberation Sans"; // font
 
 // Depth/height for deboss/emboss [mm].
-text_effect_depth = 0.4; // [0.1:0.05:2.0]
+text_full_effect_depth = 0.4; // [0.1:0.05:2.0]
 
 // Text baseline orientation on the plate.
-text_rotation = 90; // [0:45:360]
+text_full_rotation = 90; // [0:45:360]
 
 // Horizontal offset from plate center for text's center point [mm].
-text_center_width_offset = 0; // [-40:0.1:40]
+text_full_center_width_offset = 0; // [-40:0.1:40]
 
 // Vertical offset from plate center for text's center point [mm].
-text_center_height_offset = 0; // [-50:0.1:50]
+text_full_center_height_offset = 0; // [-50:0.1:50]
 
 // Horizontal alignment of text string relative to its center point.
-text_halign = "center"; // ["left", "center", "right"]
+text_full_halign = "center"; // ["left", "center", "right"]
 
 // Vertical alignment of text string relative to its center point.
-text_valign = "center"; // ["top", "center", "baseline", "bottom"]
+text_full_valign = "center"; // ["top", "center", "baseline", "bottom"]
 
 // Text spacing between characters.
-text_spacing = 1; // [1:0.05:5]
+text_full_spacing = 1; // [1:0.05:5]
+
+/* [Per Switch Text Parameters] */
+// Set to true to add text per switch, false to disable.
+enable_text_ps = false;       
+
+// How the text interacts with the plate. (Emboss raises text, deboss lowers text.)
+text_ps_effect = "emboss"; // [emboss, deboss]
+
+// Make multi-color print? (When effect is "deboss" this will fill the debossed part with a separate color.)
+text_ps_separate = false;
+
+// The text to display on the plate.
+text_ps_string = "a, b, c, d";
+
+// Font size. [mm]
+text_ps_size = 4; // [1:0.1:20]
+
+// Font name and style.
+text_ps_font_mw = "Liberation Sans"; // font
+
+// Depth/height for deboss/emboss [mm].
+text_ps_effect_depth = 0.4; // [0.1:0.05:2.0]
+
+// Text baseline orientation on the plate.
+text_ps_rotation = 0; // [0:45:360]
+
+// Horizontal offset from plate center for text's center point [mm].
+text_ps_center_width_offset = 0; // [-40:0.1:40]
+
+// Vertical offset from plate center for text's center point [mm].
+text_ps_center_height_offset = 10; // [-50:0.1:50]
+
+// Horizontal alignment of text string relative to its center point.
+text_ps_halign = "center"; // ["left", "center", "right"]
+
+// Vertical alignment of text string relative to its center point.
+text_ps_valign = "center"; // ["top", "center", "baseline", "bottom"]
+
+// Text spacing between characters.
+text_ps_spacing = 1; // [1:0.05:5]
 
 /* [SVG Parameters] */
 // Set to true to include an SVG.
@@ -155,17 +195,6 @@ switch_hole_diameter = 12.30; // 0.01
 // Distance from the top of the plate to the center of the LED hole. (11.975 default) [mm].
 led_hole_spacing = 11.975; // 0.001
 
-/* [Non-MakerWorld Text Options] */
-
-// Use this font and font styling instead of the MakerWorld chooser above (Use this option if you're not running on MakerWorld).
-local_font = false;
-
-// Font name. Ensure it's installed on your system. 
-text_font = "Liberation Sans"; // [Liberation Mono, Liberation Sans, Liberation Serif]
-
-// Font style, not all fonts support all styles.
-text_font_style = "Regular"; // [Regular, Italic, Bold, Bold Italic]
-
 /* [Experimental] */
 
 // Include holes for switch (clamp nut over this plate) and LED (this plate slides over LED lens.) (For printing a label to go over an existing metal plate.)
@@ -176,13 +205,14 @@ overlay_style = false;
 test_mode = false;
 $fn = resolution; // Rendering quality
 thin_dim = 0.01; // A small value used for making hulls or ensuring cuts.
-text_full_font = local_font ? str(text_font , ":style=", text_font_style) : text_font_mw;
-text_effect_depth_effective = ((text_effect == "deboss") && (text_effect_depth > plate_thickness)) ? plate_thickness : text_effect_depth;
+text_full_font_name = text_full_font_mw;
+text_full_effect_depth_effective = ((text_full_effect == "deboss") && (text_full_effect_depth > plate_thickness)) ? plate_thickness : text_full_effect_depth;
 svg_effect_depth_effective = ((svg_effect == "deboss") && (svg_effect_depth > plate_thickness)) ? plate_thickness : svg_effect_depth;
 png_effect_depth_effective = ((png_effect == "deboss") && (png_effect_depth > plate_thickness)) ? plate_thickness : png_effect_depth;
-safe_bound_height = plate_thickness + 2 * max(0,text_effect_depth_effective, svg_effect_depth_effective, png_effect_depth_effective) + 2 * thin_dim;
+safe_bound_height = plate_thickness + 2 * max(0,text_full_effect_depth_effective, svg_effect_depth_effective, png_effect_depth_effective) + 2 * thin_dim;
 plate_color = "DarkSlateGrey";
-text_color = "White";
+text_full_color = "White";
+text_ps_color = "Orange";
 svg_color = "Yellow";
 png_color = "Pink";
 png_depth_scale = png_effect_depth / 100;
@@ -294,37 +324,78 @@ module electronics_holes() {
 	current_unit_width_center = (number_of_units == 1) ? 0 : 
 							(i - (number_of_units - 1) / 2) * inter_unit_spacing;
 
-	// Create the pair of holes (spaced along long axis by hole_spacing) for the current unit at its calculated center.
-		if ((i == 0) || (i == (number_of_units - 1))) {
-			translate([current_unit_width_center, led_hole_center, hole_cut_height/2]) 
-				cylinder(r = led_hole_radius, h = hole_cut_height, center=true);
-			translate([current_unit_width_center, -switch_hole_center, hole_cut_height/2]) 
-				cylinder(r = switch_hole_radius, h = hole_cut_height, center=true);
-		}
+	// Create the electronics holes for the current unit at its calculated center.
+		translate([current_unit_width_center, led_hole_center, hole_cut_height/2]) 
+			cylinder(r = led_hole_radius, h = hole_cut_height, center=true);
+		translate([current_unit_width_center, -switch_hole_center, hole_cut_height/2]) 
+			cylinder(r = switch_hole_radius, h = hole_cut_height, center=true);
 	}
 
 }
 
-module text_object() {
+function split_string_by_comma_recursive(s, current_index = 0, result_list = []) =
+    let(
+        comma_pos = search(",", substr(s, current_index)),
+        next_comma_relative_pos = (len(comma_pos) > 0) ? comma_pos[0] : -1,
+        item_start = current_index,
+        item_end = (next_comma_relative_pos != -1) ? current_index + next_comma_relative_pos : len(s)
+    )
+    (current_index >= len(s)) ? result_list :
+    split_string_by_comma_recursive(
+        s,
+        (next_comma_relative_pos != -1) ? item_end + 1 : len(s), // Move past the comma for the next iteration
+        concat(result_list, [substr(s, item_start, item_end - item_start)])
+    );
+
+module text_per_switch() {
+    // Split the text_ps_string by commas into an array
+    text_labels = str_split(text_ps_string, ",");
+	echo(text_labels);
+    for (i = [0 : max(0, number_of_units - 1)]) {
+        // Calculate X position for each unit (centered)
+        current_unit_width_center = (number_of_units == 1) ? 0 : 
+            (i - (number_of_units - 1) / 2) * inter_unit_spacing;
+        // Get the label for this unit (trim whitespace)
+        label = str_trim(text_labels[i]);
+        // Place the text object for this unit
+        text_object(
+            string = label,
+            size = text_ps_size,
+            font = text_ps_font_mw,
+            halign = text_ps_halign,
+            valign = text_ps_valign,
+            spacing = text_ps_spacing,
+            rotation = text_ps_rotation,
+            pos_w = current_unit_width_center + text_ps_center_width_offset,
+            pos_h = text_ps_center_height_offset,
+            effect = text_ps_effect,
+            depth = text_ps_effect_depth
+        );
+    }
+}
+
+module text_object(string, size, font, halign, valign, spacing, rotation, pos_w, pos_h, effect, depth) {
 	// Z-level of the main flat top surface of the plate (this is below the top taper)
 	// Text will be placed relative to this surface.
 	front_face_z_level = plate_thickness;
+	text_effect_depth_effective = ((effect == "deboss") && (depth > plate_thickness)) ? plate_thickness : depth;
 
-	text_extrude_val = (text_effect == "deboss") ? text_effect_depth_effective + 2 * thin_dim : text_effect_depth_effective;
-	z_pos_text_base_val = (text_effect == "emboss") ? front_face_z_level : front_face_z_level - text_effect_depth_effective;
 
-	translate([text_center_width_offset, text_center_height_offset, z_pos_text_base_val]) {
+	text_extrude_val = (effect == "deboss") ? text_effect_depth_effective + 2 * thin_dim : text_effect_depth_effective;
+	z_pos_text_base_val = (effect == "emboss") ? front_face_z_level : front_face_z_level - text_effect_depth_effective;
+
+	translate([pos_w, pos_h, z_pos_text_base_val]) {
 		// Apply rotation for vertical text orientation
-		text_object_rotation = [0, 0, text_rotation];
+		text_object_rotation = [0, 0, rotation];
 
 		rotate(text_object_rotation) {
 			linear_extrude(height = text_extrude_val) {
-				text(text_string, 
-					size = text_size, 
-					font = text_full_font, 
-					halign = text_halign, 
-					valign = text_valign,
-					spacing = text_spacing
+				text(string, 
+					size = size, 
+					font = font, 
+					halign = halign, 
+					valign = valign,
+					spacing = spacing
 					);
 			}
 		}
@@ -408,13 +479,29 @@ if (test_mode) {
 			// Start with plate body with embossed non-separate items
 			union() {
 				plate_body();
-				if (enable_text && (text_effect == "emboss") && !text_separate) {
+				if (enable_text_full && (text_full_effect == "emboss") && !text_full_separate) {
 					intersection() {
 						// Make text object that exists only above the plate
-						text_object();
+						text_object(
+							string = text_full_string,
+							size = text_full_size,
+							font = text_full_font_name,
+						 	halign = text_full_halign,
+							valign = text_full_valign,
+							spacing = text_full_spacing,
+							rotation = text_full_rotation,
+							pos_w = text_full_center_width_offset,
+							pos_h = text_full_center_height_offset,
+							effect = text_full_effect,
+							depth = text_full_effect_depth
+						);
 						decoration_bounding_box();
 					}
 				}
+				if (enable_text_ps && (text_ps_effect == "emboss") && !text_ps_separate) {
+					text_per_switch();
+				}
+
 				if (enable_svg && (svg_effect == "emboss") && !svg_separate) {
 					intersection() {
 						// Make svg object that exists only above the plate
@@ -438,25 +525,56 @@ if (test_mode) {
 				electronics_holes();
 			}
 			// Subtract debossed items
-			if (enable_text && (text_effect == "deboss")) {
-				text_object();
+			if (enable_text_full && (text_full_effect == "deboss")) {
+				text_object(
+					string = text_full_string,
+					size = text_full_size,
+					font = text_full_font_name,
+					halign = text_full_halign,
+					valign = text_full_valign,
+					spacing = text_full_spacing,
+					rotation = text_full_rotation,
+					pos_w = text_full_center_width_offset,
+					pos_h = text_full_center_height_offset,
+					effect = text_full_effect,
+					depth = text_full_effect_depth
+				);
 			}
+		   if (enable_text_ps && (text_ps_effect == "deboss")) {
+				text_per_switch();
+		   }
 			if (enable_svg && (svg_effect == "deboss")) {
 				svg_object();
 			}
 			if (enable_png && (png_effect == "deboss")) {
 				png_object();
 			}
-
 		}
 	}
-	if ((enable_text) && (text_separate)) {
-		color(text_color) {
+	if ((enable_text_full) && (text_full_separate)) {
+		color(text_full_color) {
 			intersection() { // Make text object that exists only above the plate
-				text_object();
+				text_object(
+					string = text_full_string,
+					size = text_full_size,
+					font = text_full_font_name,
+					halign = text_full_halign,
+					valign = text_full_valign,
+					spacing = text_full_spacing,
+					rotation = text_full_rotation,
+					pos_w = text_full_center_width_offset,
+					pos_h = text_full_center_height_offset,
+					effect = text_full_effect,
+					depth = text_full_effect_depth
+				);
 				decoration_bounding_box();
 			}
 		} 
+	}
+	if ((enable_text_ps) && (text_ps_separate)) {
+		color(text_ps_color) {
+		text_per_switch(); // Make text object that exists only above the plate
+		}
 	}
 	if ((enable_svg) && (svg_separate)) {
 		color(svg_color) {
