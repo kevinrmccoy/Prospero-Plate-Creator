@@ -6,6 +6,8 @@
 // OpenSCAD by Kevin McCoy. www.kevin-mccoy.com - @kevinrmccoy on github
 //
 
+include <BOSL2/std.scad>;
+
 /* [User Parameters] */
 // Number of "units" (empty switch panels) wide.
 number_of_units = 4; // [1:10]
@@ -333,30 +335,21 @@ module electronics_holes() {
 
 }
 
-function split_string_by_comma_recursive(s, current_index = 0, result_list = []) =
-    let(
-        comma_pos = search(",", substr(s, current_index)),
-        next_comma_relative_pos = (len(comma_pos) > 0) ? comma_pos[0] : -1,
-        item_start = current_index,
-        item_end = (next_comma_relative_pos != -1) ? current_index + next_comma_relative_pos : len(s)
-    )
-    (current_index >= len(s)) ? result_list :
-    split_string_by_comma_recursive(
-        s,
-        (next_comma_relative_pos != -1) ? item_end + 1 : len(s), // Move past the comma for the next iteration
-        concat(result_list, [substr(s, item_start, item_end - item_start)])
-    );
-
 module text_per_switch() {
     // Split the text_ps_string by commas into an array
     text_labels = str_split(text_ps_string, ",");
+	num_labels = len(text_labels);
 	echo(text_labels);
-    for (i = [0 : max(0, number_of_units - 1)]) {
+	echo(num_labels);
+    for (i = [0 : max(0, number_of_units - 1, num_labels - 1)]) {
+		echo("loop", i);
+		echo(text_labels[i]);
         // Calculate X position for each unit (centered)
         current_unit_width_center = (number_of_units == 1) ? 0 : 
             (i - (number_of_units - 1) / 2) * inter_unit_spacing;
         // Get the label for this unit (trim whitespace)
-        label = str_trim(text_labels[i]);
+		
+        label = str_strip(text_labels[i]," ");
         // Place the text object for this unit
         text_object(
             string = label,
