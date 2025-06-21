@@ -10,7 +10,7 @@ include <BOSL2/std.scad>;
 
 /* [User Parameters] */
 // Number of "units" (empty switch panels) wide.
-number_of_units = 4; // [1:10]
+number_of_units = 1; // [1:10]
 
 // Make only the corner mounting holes, rather than for every plate position?
 corner_holes_only = false;
@@ -29,13 +29,13 @@ plate_thickness = 1.2; // [0.6:0.05:2.0]
 
 /* [Full Plate Text Parameters] */
 // Set to true to add text to the full plate, false to disable.
-enable_text_full = false;       
+enable_text_full = false;
 
 // How the text interacts with the plate. (Emboss raises text, deboss lowers text.)
 text_full_effect = "emboss"; // [emboss, deboss]
 
 // Make multi-color print? (When effect is "deboss" this will fill the debossed part with a separate color.)
-text_full_separate = false;
+text_full_separate = true;
 
 // The text to display on the plate.
 text_full_string = "Prospero";
@@ -50,35 +50,35 @@ text_full_font_mw = "Liberation Sans"; // font
 text_full_effect_depth = 0.4; // [0.1:0.05:2.0]
 
 // Text baseline orientation on the plate.
-text_full_rotation = 90; // [0:45:360]
+text_full_rotation = 0; // [0:45:360]
 
 // Horizontal offset from plate center for text's center point [mm].
 text_full_center_width_offset = 0; // [-40:0.1:40]
 
-// Vertical offset from plate center for text's center point [mm].
+// Vertical offset from plate center for text's center point [mm]. (0 is default, try 15 for switch plates.)
 text_full_center_height_offset = 0; // [-50:0.1:50]
 
 // Horizontal alignment of text string relative to its center point.
 text_full_halign = "center"; // ["left", "center", "right"]
 
 // Vertical alignment of text string relative to its center point.
-text_full_valign = "center"; // ["top", "center", "baseline", "bottom"]
+text_full_valign = "baseline"; // ["top", "center", "baseline", "bottom"]
 
 // Text spacing between characters.
 text_full_spacing = 1; // [1:0.05:5]
 
 /* [Per Switch Text Parameters] */
 // Set to true to add text per switch, false to disable.
-enable_text_ps = false;       
+enable_text_ps = false;
 
 // How the text interacts with the plate. (Emboss raises text, deboss lowers text.)
 text_ps_effect = "emboss"; // [emboss, deboss]
 
 // Make multi-color print? (When effect is "deboss" this will fill the debossed part with a separate color.)
-text_ps_separate = false;
+text_ps_separate = true;
 
-// The text to display on the plate.
-text_ps_string = "a, b, c, d";
+// A comma-delimited list of text to show for each switch, for example "a, b, c".  Any leading or trailing spaces will be removed.  Excess items will be ignored.  
+text_ps_string = "a, b, c";
 
 // Font size. [mm]
 text_ps_size = 4; // [1:0.1:20]
@@ -95,14 +95,14 @@ text_ps_rotation = 0; // [0:45:360]
 // Horizontal offset from plate center for text's center point [mm].
 text_ps_center_width_offset = 0; // [-40:0.1:40]
 
-// Vertical offset from plate center for text's center point [mm].
-text_ps_center_height_offset = 10; // [-50:0.1:50]
+// Vertical offset from plate center for text's center point [mm]. (6 is a decent option for use with the switch cutout.)
+text_ps_center_height_offset = 6; // [-50:0.1:50]
 
 // Horizontal alignment of text string relative to its center point.
 text_ps_halign = "center"; // ["left", "center", "right"]
 
 // Vertical alignment of text string relative to its center point.
-text_ps_valign = "center"; // ["top", "center", "baseline", "bottom"]
+text_ps_valign = "baseline"; // ["top", "center", "baseline", "bottom"]
 
 // Text spacing between characters.
 text_ps_spacing = 1; // [1:0.05:5]
@@ -197,21 +197,16 @@ switch_hole_diameter = 12.30; // 0.01
 // Distance from the top of the plate to the center of the LED hole. (11.975 default) [mm].
 led_hole_spacing = 11.975; // 0.001
 
-/* [Experimental] */
-
-// Include holes for switch (clamp nut over this plate) and LED (this plate slides over LED lens.) (For printing a label to go over an existing metal plate.)
-overlay_style = false;
-
 /* [Hidden] */
 
 test_mode = false;
 $fn = resolution; // Rendering quality
 thin_dim = 0.01; // A small value used for making hulls or ensuring cuts.
 text_full_font_name = text_full_font_mw;
-text_full_effect_depth_effective = ((text_full_effect == "deboss") && (text_full_effect_depth > plate_thickness)) ? plate_thickness : text_full_effect_depth;
-svg_effect_depth_effective = ((svg_effect == "deboss") && (svg_effect_depth > plate_thickness)) ? plate_thickness : svg_effect_depth;
-png_effect_depth_effective = ((png_effect == "deboss") && (png_effect_depth > plate_thickness)) ? plate_thickness : png_effect_depth;
-safe_bound_height = plate_thickness + 2 * max(0,text_full_effect_depth_effective, svg_effect_depth_effective, png_effect_depth_effective) + 2 * thin_dim;
+text_full_effect_depth_effective = ( (text_full_effect == "deboss") && (text_full_effect_depth > plate_thickness)) ? plate_thickness : text_full_effect_depth;
+svg_effect_depth_effective = ( (svg_effect == "deboss") && (svg_effect_depth > plate_thickness)) ? plate_thickness : svg_effect_depth;
+png_effect_depth_effective = ( (png_effect == "deboss") && (png_effect_depth > plate_thickness)) ? plate_thickness : png_effect_depth;
+safe_bound_height = plate_thickness + 2 * max(0, text_full_effect_depth_effective, svg_effect_depth_effective, png_effect_depth_effective) + 2 * thin_dim;
 plate_color = "DarkSlateGrey";
 text_full_color = "White";
 text_ps_color = "Orange";
@@ -220,9 +215,11 @@ png_color = "Pink";
 png_depth_scale = png_effect_depth / 100;
 
 // --- Calculate Overall Plate Width ---
-generated_plate_width = (number_of_units <= 0) ? single_unit_width : // Make single plate for unit values below 1.
-						(number_of_units == 1) ? single_unit_width :
-						(single_unit_width + (number_of_units - 1) * inter_unit_spacing);
+generated_plate_width =
+  (number_of_units <= 0) ? single_unit_width
+  : // Make single plate for unit values below 1.
+  (number_of_units == 1) ? single_unit_width
+  : (single_unit_width + (number_of_units - 1) * inter_unit_spacing);
 
 // --- Calculated Taper Z-Dim ---
 // Z-height of the tapered/chamfered edge portion.
@@ -234,360 +231,382 @@ actual_taper_z_dim_calc = min(edge_chamfer_size, plate_thickness / 2); // If hal
 // Dimensions are (generated_plate_width (X) by plate_height (Y)) with filleted corners.
 // Uses hull command by placing four fillet circles at the corners and then filling in the area in between.
 module main_body_plan_sketch() {
-	if (corner_fillet_radius > 0) {
-		hull() {
-			for (sx = [-1, 1]) {
-				for (sy = [-1, 1]) {
-					translate([
-						sx * (generated_plate_width/2 - corner_fillet_radius),
-						sy * (plate_height/2 - corner_fillet_radius)
-					]) 
-					circle(r = corner_fillet_radius);
-				}
-			}
-		}
-	} else {
-		square(size = [generated_plate_width, plate_height], center=true);
-	}
+  if (corner_fillet_radius > 0) {
+    hull() {
+      for (sx = [-1, 1]) {
+        for (sy = [-1, 1]) {
+          translate(
+            [
+              sx * (generated_plate_width / 2 - corner_fillet_radius),
+              sy * (plate_height / 2 - corner_fillet_radius),
+            ]
+          )
+            circle(r=corner_fillet_radius);
+        }
+      }
+    }
+  } else {
+    square(size=[generated_plate_width, plate_height], center=true);
+  }
 }
 
 // Sketch for the plan view of the top and bottom surface (to create chamfer) (at z=0 and z=plate_thickness).
 // This profile is smaller than the main body cross-section.
 module tapered_edge_plan_sketch() {
-	xy_offset_for_taper = edge_chamfer_size;
-	offset(delta = -xy_offset_for_taper) {
-		main_body_plan_sketch(); // Offset from the main body profile
-	}
+  xy_offset_for_taper = edge_chamfer_size;
+  offset(delta=-xy_offset_for_taper) {
+    main_body_plan_sketch(); // Offset from the main body profile
+  }
 }
 
 // Module to create the 3D plate body with tapered edges.
 module plate_body() {
-	union() {
-		hull() { // Make bottom of plate
-			linear_extrude(height = thin_dim) {
-				tapered_edge_plan_sketch();
-			}
-			translate([0,0,actual_taper_z_dim_calc])
-				linear_extrude(height = thin_dim) {
-					main_body_plan_sketch();
-				}
-		}
-		middle_height = plate_thickness - (actual_taper_z_dim_calc * 2);
-		if (middle_height > thin_dim) { // Make middle of plate (Only need to extrude this bit if the overall plate is thicker than the chamfer.)
-			translate([0,0,actual_taper_z_dim_calc])
-				linear_extrude(height = middle_height) main_body_plan_sketch();
-		}
-		
-		hull() { // Make top of plate
-			translate([0,0,plate_thickness - actual_taper_z_dim_calc]) 
-				linear_extrude(height = thin_dim) {
-					main_body_plan_sketch();
-				}
-			translate([0,0,plate_thickness]) 
-				linear_extrude(height = thin_dim) {
-					tapered_edge_plan_sketch(); 
-				}
-		}
-	}
+  union() {
+    hull() {
+      // Make bottom of plate
+      linear_extrude(height=thin_dim) {
+        tapered_edge_plan_sketch();
+      }
+      translate([0, 0, actual_taper_z_dim_calc])
+        linear_extrude(height=thin_dim) {
+          main_body_plan_sketch();
+        }
+    }
+    middle_height = plate_thickness - (actual_taper_z_dim_calc * 2);
+    if (middle_height > thin_dim) {
+      // Make middle of plate (Only need to extrude this bit if the overall plate is thicker than the chamfer.)
+      translate([0, 0, actual_taper_z_dim_calc])
+        linear_extrude(height=middle_height) main_body_plan_sketch();
+    }
+
+    hull() {
+      // Make top of plate
+      translate([0, 0, plate_thickness - actual_taper_z_dim_calc])
+        linear_extrude(height=thin_dim) {
+          main_body_plan_sketch();
+        }
+      translate([0, 0, plate_thickness])
+        linear_extrude(height=thin_dim) {
+          tapered_edge_plan_sketch();
+        }
+    }
+  }
 }
 
 // Module to create the mounting holes for all units
 module mounting_holes() {
-	hole_radius = hole_diameter / 2;
-	hole_cut_height = safe_bound_height;
-	
-	// Loop through each unit to place its pair of holes
-	for (i = [0 : max(0, number_of_units - 1)]) { 
-		// Calculate Y offset for the center of the current unit's hole pattern.
-		// The pattern of unit centers is itself centered around Y=0.
-		current_unit_width_center = (number_of_units == 1) ? 0 : 
-								(i - (number_of_units - 1) / 2) * inter_unit_spacing;
+  hole_radius = hole_diameter / 2;
+  hole_cut_height = safe_bound_height;
 
-		// Create the pair of holes (spaced along long axis by hole_spacing) for the current unit at its calculated center.
-		if ((i == 0) || (i == (number_of_units - 1)) || (corner_holes_only == false)) {
-			translate([current_unit_width_center, hole_spacing/2, hole_cut_height/2]) 
-				cylinder(r = hole_radius, h = hole_cut_height, center=true);
-			translate([current_unit_width_center, -hole_spacing/2, hole_cut_height/2]) 
-				cylinder(r = hole_radius, h = hole_cut_height, center=true);
-		}
-	}
+  // Loop through each unit to place its pair of holes
+  for (i = [0:max(0, number_of_units - 1)]) {
+    // Calculate Y offset for the center of the current unit's hole pattern.
+    // The pattern of unit centers is itself centered around Y=0.
+    current_unit_width_center =
+      (number_of_units == 1) ? 0
+      : (i - (number_of_units - 1) / 2) * inter_unit_spacing;
+
+    // Create the pair of holes (spaced along long axis by hole_spacing) for the current unit at its calculated center.
+    if ( (i == 0) || (i == (number_of_units - 1)) || (corner_holes_only == false)) {
+      translate([current_unit_width_center, hole_spacing / 2, hole_cut_height / 2])
+        cylinder(r=hole_radius, h=hole_cut_height, center=true);
+      translate([current_unit_width_center, -hole_spacing / 2, hole_cut_height / 2])
+        cylinder(r=hole_radius, h=hole_cut_height, center=true);
+    }
+  }
 }
 
 module electronics_holes() {
-	led_hole_radius = led_hole_diameter / 2;
-	led_hole_center = (plate_height / 2) - led_hole_spacing;
-	switch_hole_radius = switch_hole_diameter / 2;
-	switch_hole_center = (plate_height / 2) - switch_hole_spacing;
-	hole_cut_height = safe_bound_height;
+  led_hole_radius = led_hole_diameter / 2;
+  led_hole_center = (plate_height / 2) - led_hole_spacing;
+  switch_hole_radius = switch_hole_diameter / 2;
+  switch_hole_center = (plate_height / 2) - switch_hole_spacing;
+  hole_cut_height = safe_bound_height;
 
-	for (i = [0 : max(0, number_of_units - 1)]) { 
-	// Calculate Y offset for the center of the current unit's hole pattern.
-	// The pattern of unit centers is itself centered around Y=0.
-	current_unit_width_center = (number_of_units == 1) ? 0 : 
-							(i - (number_of_units - 1) / 2) * inter_unit_spacing;
+  for (i = [0:max(0, number_of_units - 1)]) {
+    // Calculate Y offset for the center of the current unit's hole pattern.
+    // The pattern of unit centers is itself centered around Y=0.
+    current_unit_width_center =
+      (number_of_units == 1) ? 0
+      : (i - (number_of_units - 1) / 2) * inter_unit_spacing;
 
-	// Create the electronics holes for the current unit at its calculated center.
-		translate([current_unit_width_center, led_hole_center, hole_cut_height/2]) 
-			cylinder(r = led_hole_radius, h = hole_cut_height, center=true);
-		translate([current_unit_width_center, -switch_hole_center, hole_cut_height/2]) 
-			cylinder(r = switch_hole_radius, h = hole_cut_height, center=true);
-	}
-
+    // Create the electronics holes for the current unit at its calculated center.
+    translate([current_unit_width_center, led_hole_center, hole_cut_height / 2])
+      cylinder(r=led_hole_radius, h=hole_cut_height, center=true);
+    translate([current_unit_width_center, -switch_hole_center, hole_cut_height / 2])
+      cylinder(r=switch_hole_radius, h=hole_cut_height, center=true);
+  }
 }
 
-module text_per_switch() {
-    // Split the text_ps_string by commas into an array
-    text_labels = str_split(text_ps_string, ",");
-	num_labels = len(text_labels);
-	echo(text_labels);
-	echo(num_labels);
-    for (i = [0 : max(0, number_of_units - 1, num_labels - 1)]) {
-		echo("loop", i);
-		echo(text_labels[i]);
-        // Calculate X position for each unit (centered)
-        current_unit_width_center = (number_of_units == 1) ? 0 : 
-            (i - (number_of_units - 1) / 2) * inter_unit_spacing;
-        // Get the label for this unit (trim whitespace)
-		
-        label = str_strip(text_labels[i]," ");
-        // Place the text object for this unit
+module text_per_switch(in_color = false) {
+  // Split the text_ps_string by commas into an array
+  text_labels = str_split(text_ps_string, ",");
+  num_labels = len(text_labels);
+  for (i = [0:max(0, min(number_of_units - 1, num_labels - 1))]) {
+    // Calculate X position for each unit (centered)
+    current_unit_width_center =
+      (number_of_units == 1) ? 0
+      : (i - (number_of_units - 1) / 2) * inter_unit_spacing;
+    // Get the label for this unit (trim whitespace)
+    label = str_strip(text_labels[i], " ");
+    // Place the text object for this unit
+    if (in_color) {
+      t_r = 1;
+      t_g = ( (i * 10) / 255);
+      t_b = ( (i * 10) / 255);
+      color([t_r, t_g, t_b]) {
         text_object(
-            string = label,
-            size = text_ps_size,
-            font = text_ps_font_mw,
-            halign = text_ps_halign,
-            valign = text_ps_valign,
-            spacing = text_ps_spacing,
-            rotation = text_ps_rotation,
-            pos_w = current_unit_width_center + text_ps_center_width_offset,
-            pos_h = text_ps_center_height_offset,
-            effect = text_ps_effect,
-            depth = text_ps_effect_depth
+          string=label,
+          size=text_ps_size,
+          font=text_ps_font_mw,
+          halign=text_ps_halign,
+          valign=text_ps_valign,
+          spacing=text_ps_spacing,
+          rotation=text_ps_rotation,
+          pos_w=current_unit_width_center + text_ps_center_width_offset,
+          pos_h=text_ps_center_height_offset,
+          effect=text_ps_effect,
+          depth=text_ps_effect_depth
         );
+      }
+    } else {
+      text_object(
+        string=label,
+        size=text_ps_size,
+        font=text_ps_font_mw,
+        halign=text_ps_halign,
+        valign=text_ps_valign,
+        spacing=text_ps_spacing,
+        rotation=text_ps_rotation,
+        pos_w=current_unit_width_center + text_ps_center_width_offset,
+        pos_h=text_ps_center_height_offset,
+        effect=text_ps_effect,
+        depth=text_ps_effect_depth
+      );
     }
+  }
 }
 
 module text_object(string, size, font, halign, valign, spacing, rotation, pos_w, pos_h, effect, depth) {
-	// Z-level of the main flat top surface of the plate (this is below the top taper)
-	// Text will be placed relative to this surface.
-	front_face_z_level = plate_thickness;
-	text_effect_depth_effective = ((effect == "deboss") && (depth > plate_thickness)) ? plate_thickness : depth;
+  // Z-level of the main flat top surface of the plate (this is below the top taper)
+  // Text will be placed relative to this surface.
+  front_face_z_level = plate_thickness;
+  text_effect_depth_effective = ( (effect == "deboss") && (depth > plate_thickness)) ? plate_thickness : depth;
 
+  text_extrude_val = (effect == "deboss") ? text_effect_depth_effective + 2 * thin_dim : text_effect_depth_effective;
+  z_pos_text_base_val = (effect == "emboss") ? front_face_z_level : front_face_z_level - text_effect_depth_effective;
 
-	text_extrude_val = (effect == "deboss") ? text_effect_depth_effective + 2 * thin_dim : text_effect_depth_effective;
-	z_pos_text_base_val = (effect == "emboss") ? front_face_z_level : front_face_z_level - text_effect_depth_effective;
+  translate([pos_w, pos_h, z_pos_text_base_val]) {
+    // Apply rotation for vertical text orientation
+    text_object_rotation = [0, 0, rotation];
 
-	translate([pos_w, pos_h, z_pos_text_base_val]) {
-		// Apply rotation for vertical text orientation
-		text_object_rotation = [0, 0, rotation];
-
-		rotate(text_object_rotation) {
-			linear_extrude(height = text_extrude_val) {
-				text(string, 
-					size = size, 
-					font = font, 
-					halign = halign, 
-					valign = valign,
-					spacing = spacing
-					);
-			}
-		}
-	}
+    rotate(text_object_rotation) {
+      linear_extrude(height=text_extrude_val) {
+        text(
+          string,
+          size=size,
+          font=font,
+          halign=halign,
+          valign=valign,
+          spacing=spacing
+        );
+      }
+    }
+  }
 }
 
 module svg_object() {
-	front_face_z_level = plate_thickness;
+  front_face_z_level = plate_thickness;
 
-	svg_extrude_val = (svg_effect == "deboss") ? svg_effect_depth_effective + 2 * thin_dim : svg_effect_depth_effective;
-	z_pos_svg_base_val = (svg_effect == "emboss") ? front_face_z_level : front_face_z_level - svg_effect_depth_effective;
+  svg_extrude_val = (svg_effect == "deboss") ? svg_effect_depth_effective + 2 * thin_dim : svg_effect_depth_effective;
+  z_pos_svg_base_val = (svg_effect == "emboss") ? front_face_z_level : front_face_z_level - svg_effect_depth_effective;
 
-	translate([svg_center_width_offset, svg_center_height_offset, z_pos_svg_base_val]) {
-		svg_object_rotation = [0, 0, svg_rotation];
-		svg_object_scaling = [svg_scale, svg_scale, 1];
+  translate([svg_center_width_offset, svg_center_height_offset, z_pos_svg_base_val]) {
+    svg_object_rotation = [0, 0, svg_rotation];
+    svg_object_scaling = [svg_scale, svg_scale, 1];
 
-		rotate(svg_object_rotation) {
-			scale(svg_object_scaling) {
-				linear_extrude(height = svg_extrude_val) {
-					import(file = svg_file, center=true);
-				}
-			}
-		}
-	}
-
+    rotate(svg_object_rotation) {
+      scale(svg_object_scaling) {
+        linear_extrude(height=svg_extrude_val) {
+          import(file=svg_file, center=true);
+        }
+      }
+    }
+  }
 }
 
 module png_object() {
-	front_face_z_level = plate_thickness;
-	z_pos_png_base_val = (png_effect == "emboss") ? front_face_z_level : front_face_z_level + 2*thin_dim;
-	png_mirroring = [0, 0, png_effect == "deboss" ? 1 : 0];
-	scaled_plate_width = generated_plate_width / png_scale;
-	scaled_plate_height = plate_height / png_scale;
-	png_object_rotation = png_rotation;
-	png_object_scaling = [png_scale, png_scale, png_depth_scale];
+  front_face_z_level = plate_thickness;
+  z_pos_png_base_val = (png_effect == "emboss") ? front_face_z_level : front_face_z_level + 2 * thin_dim;
+  png_mirroring = [0, 0, png_effect == "deboss" ? 1 : 0];
+  scaled_plate_width = generated_plate_width / png_scale;
+  scaled_plate_height = plate_height / png_scale;
+  png_object_rotation = png_rotation;
+  png_object_scaling = [png_scale, png_scale, png_depth_scale];
 
-	intersection() {
-		translate([png_center_width_offset, png_center_height_offset, z_pos_png_base_val]) {
-			rotate(png_object_rotation) {
-				scale(png_object_scaling) {
-					mirror(png_mirroring) {
-						difference() { // This cuts off the 1 unit "footprint" imposed under the image by the surface cmd.
-							surface(file = png_file, center = true, invert = false);
-							translate([0,0,-0.50]) {
-								cube(size = [scaled_plate_width*2, scaled_plate_height*2, 1], center = true);
-							}
-						}
-					}
-				}
-			}
-		}
-		decoration_bounding_box();
-	}
+  intersection() {
+    translate([png_center_width_offset, png_center_height_offset, z_pos_png_base_val]) {
+      rotate(png_object_rotation) {
+        scale(png_object_scaling) {
+          mirror(png_mirroring) {
+            difference() {
+              // This cuts off the 1 unit "footprint" imposed under the image by the surface cmd.
+              surface(file=png_file, center=true, invert=false);
+              translate([0, 0, -0.50]) {
+                cube(size=[scaled_plate_width * 2, scaled_plate_height * 2, 1], center=true);
+              }
+            }
+          }
+        }
+      }
+    }
+    decoration_bounding_box();
+  }
 }
 
 module decoration_bounding_box() {
-	// Makes a bounding box for allowable text placement.
-	box_height = safe_bound_height;
-	difference() {
-		linear_extrude(height = box_height) {
-			tapered_edge_plan_sketch();
-		}
-		mounting_holes();
-	}
+  // Makes a bounding box for allowable text placement.
+  box_height = safe_bound_height;
+  difference() {
+    linear_extrude(height=box_height) {
+      tapered_edge_plan_sketch();
+    }
+    mounting_holes();
+  }
 }
 
 module null_object() {
-	// Makes a thin object out of the way used as a placeholder
-	z_distance = plate_thickness;
-	translate(0,0,-z_distance) {
-		linear_extrude(height = thin_dim);
-	}
+  // Makes a thin object out of the way used as a placeholder
+  z_distance = plate_thickness;
+  translate(0, 0, -z_distance) {
+    linear_extrude(height=thin_dim);
+  }
 }
 
 // --- Main Assembly ---
 if (test_mode) {
-	echo("test mode");
+  echo("test mode");
 } else if (number_of_units > 0) {
-	color(plate_color) {
-		difference() {
-			// Start with plate body with embossed non-separate items
-			union() {
-				plate_body();
-				if (enable_text_full && (text_full_effect == "emboss") && !text_full_separate) {
-					intersection() {
-						// Make text object that exists only above the plate
-						text_object(
-							string = text_full_string,
-							size = text_full_size,
-							font = text_full_font_name,
-						 	halign = text_full_halign,
-							valign = text_full_valign,
-							spacing = text_full_spacing,
-							rotation = text_full_rotation,
-							pos_w = text_full_center_width_offset,
-							pos_h = text_full_center_height_offset,
-							effect = text_full_effect,
-							depth = text_full_effect_depth
-						);
-						decoration_bounding_box();
-					}
-				}
-				if (enable_text_ps && (text_ps_effect == "emboss") && !text_ps_separate) {
-					text_per_switch();
-				}
+  color(plate_color) {
+    difference() {
+      // Start with plate body with embossed non-separate items
+      union() {
+        plate_body();
+        if (enable_text_full && (text_full_effect == "emboss") && !text_full_separate) {
+          intersection() {
+            // Make text object that exists only above the plate
+            text_object(
+              string=text_full_string,
+              size=text_full_size,
+              font=text_full_font_name,
+              halign=text_full_halign,
+              valign=text_full_valign,
+              spacing=text_full_spacing,
+              rotation=text_full_rotation,
+              pos_w=text_full_center_width_offset,
+              pos_h=text_full_center_height_offset,
+              effect=text_full_effect,
+              depth=text_full_effect_depth
+            );
+            decoration_bounding_box();
+          }
+        }
+        if (enable_text_ps && (text_ps_effect == "emboss") && !text_ps_separate) {
+          text_per_switch(in_color=false);
+        }
 
-				if (enable_svg && (svg_effect == "emboss") && !svg_separate) {
-					intersection() {
-						// Make svg object that exists only above the plate
-						svg_object();
-						decoration_bounding_box();
-					}
-				}
-				if (enable_png && (png_effect == "emboss") && !png_separate) {
-					intersection() {
-						// Make png object that exists only above the plate
-						png_object();
-						decoration_bounding_box();
-					}
-				}
-
-			}
-			// Subtract mounting holes
-			mounting_holes();
-			// Subtract electronics holes
-			if (electronics_holes) {
-				electronics_holes();
-			}
-			// Subtract debossed items
-			if (enable_text_full && (text_full_effect == "deboss")) {
-				text_object(
-					string = text_full_string,
-					size = text_full_size,
-					font = text_full_font_name,
-					halign = text_full_halign,
-					valign = text_full_valign,
-					spacing = text_full_spacing,
-					rotation = text_full_rotation,
-					pos_w = text_full_center_width_offset,
-					pos_h = text_full_center_height_offset,
-					effect = text_full_effect,
-					depth = text_full_effect_depth
-				);
-			}
-		   if (enable_text_ps && (text_ps_effect == "deboss")) {
-				text_per_switch();
-		   }
-			if (enable_svg && (svg_effect == "deboss")) {
-				svg_object();
-			}
-			if (enable_png && (png_effect == "deboss")) {
-				png_object();
-			}
-		}
-	}
-	if ((enable_text_full) && (text_full_separate)) {
-		color(text_full_color) {
-			intersection() { // Make text object that exists only above the plate
-				text_object(
-					string = text_full_string,
-					size = text_full_size,
-					font = text_full_font_name,
-					halign = text_full_halign,
-					valign = text_full_valign,
-					spacing = text_full_spacing,
-					rotation = text_full_rotation,
-					pos_w = text_full_center_width_offset,
-					pos_h = text_full_center_height_offset,
-					effect = text_full_effect,
-					depth = text_full_effect_depth
-				);
-				decoration_bounding_box();
-			}
-		} 
-	}
-	if ((enable_text_ps) && (text_ps_separate)) {
-		color(text_ps_color) {
-		text_per_switch(); // Make text object that exists only above the plate
-		}
-	}
-	if ((enable_svg) && (svg_separate)) {
-		color(svg_color) {
-			intersection() { // Make svg object that exists only above the plate
-				svg_object();
-				decoration_bounding_box();
-			}
-		} 
-	}
-	if ((enable_png) && (png_separate)) {
-		color(png_color) {
-			intersection() { // Make png object that exists only above the plate
-				png_object();
-				decoration_bounding_box();
-			}
-		} 
-	}
-
+        if (enable_svg && (svg_effect == "emboss") && !svg_separate) {
+          intersection() {
+            // Make svg object that exists only above the plate
+            svg_object();
+            decoration_bounding_box();
+          }
+        }
+        if (enable_png && (png_effect == "emboss") && !png_separate) {
+          intersection() {
+            // Make png object that exists only above the plate
+            png_object();
+            decoration_bounding_box();
+          }
+        }
+      }
+      // Subtract mounting holes
+      mounting_holes();
+      // Subtract electronics holes
+      if (electronics_holes) {
+        electronics_holes();
+      }
+      // Subtract debossed items
+      if (enable_text_full && (text_full_effect == "deboss")) {
+        text_object(
+          string=text_full_string,
+          size=text_full_size,
+          font=text_full_font_name,
+          halign=text_full_halign,
+          valign=text_full_valign,
+          spacing=text_full_spacing,
+          rotation=text_full_rotation,
+          pos_w=text_full_center_width_offset,
+          pos_h=text_full_center_height_offset,
+          effect=text_full_effect,
+          depth=text_full_effect_depth
+        );
+      }
+      if (enable_text_ps && (text_ps_effect == "deboss")) {
+        text_per_switch(in_color=false);
+      }
+      if (enable_svg && (svg_effect == "deboss")) {
+        svg_object();
+      }
+      if (enable_png && (png_effect == "deboss")) {
+        png_object();
+      }
+    }
+  }
+  if ( (enable_text_full) && (text_full_separate)) {
+    color(text_full_color) {
+      intersection() {
+        // Make text object that exists only above the plate
+        text_object(
+          string=text_full_string,
+          size=text_full_size,
+          font=text_full_font_name,
+          halign=text_full_halign,
+          valign=text_full_valign,
+          spacing=text_full_spacing,
+          rotation=text_full_rotation,
+          pos_w=text_full_center_width_offset,
+          pos_h=text_full_center_height_offset,
+          effect=text_full_effect,
+          depth=text_full_effect_depth
+        );
+        decoration_bounding_box();
+      }
+    }
+  }
+  if ( (enable_text_ps) && (text_ps_separate)) {
+    text_per_switch(in_color=true); // Make text objects that exist only above the plate
+  }
+  if ( (enable_svg) && (svg_separate)) {
+    color(svg_color) {
+      intersection() {
+        // Make svg object that exists only above the plate
+        svg_object();
+        decoration_bounding_box();
+      }
+    }
+  }
+  if ( (enable_png) && (png_separate)) {
+    color(png_color) {
+      intersection() {
+        // Make png object that exists only above the plate
+        png_object();
+        decoration_bounding_box();
+      }
+    }
+  }
 } else {
-	%cube(1); // Show a small cube if number_of_units is invalid, to indicate an issue.
-			  // The % highlights it in purple in OpenSCAD preview.
-	echo("Warning: number_of_units is not positive, generating a placeholder.");
+  %cube(1); // Show a small cube if number_of_units is invalid, to indicate an issue.
+  // The % highlights it in purple in OpenSCAD preview.
+  echo("Warning: number_of_units is not positive, generating a placeholder.");
 }
