@@ -54,6 +54,8 @@ Combining the text, SVG, and PNG features might result in strange results, espec
 
 Suggested printing tips: Print with a stronger profile than usual for more stiffness in very thin plates.  (For example: Wall loops - 6, infill - 25%.)
 
+The screws to hold the plates to the unit are 1/4" #4-40, as indicated in the [Prospero Parts Visual Reference provided by Ben Peoples Industries.](https://docs.benpeoples.com/prospero-dmx-cue-light-panel/prospero-parts-visual-reference#3d6a672da66f4d4db09283e1e5e6c471)
+
 ![Photograph of single plate printed in black PLA](ProsperoPlate-Single.jpg)
 
 ![Photograph of quad plate with text mounted in Prospero unit](ProsperoPlate-4WideWithText.jpg)
