@@ -6,39 +6,66 @@ Makes custom-sized front panel plates for the [Prospero Cue Light Panel by Ben P
 
 [Posted on MakerWorld.](https://makerworld.com/en/models/1487187-prospero-plate-creator)
 
-This customizer runs in OpenSCAD but if you want to do multicolor stuff with text or images that feature is only available on MakerWorld at the moment (or requires some knowledge of how to export separate objects from OpenSCAD.)
+This customizer can run locally in OpenSCAD but if you want to do multicolor stuff with text or images that feature is only available on MakerWorld at the moment (or requires some knowledge of how to export separate objects from OpenSCAD.)
 
 Colors are just set for visibility and object separation -- MakerWorld exports separately-colored objects as different filaments in the resulting 3MF, and the actual filaments can be chosen in the slicer before printing.
 
-## Text Information
+## Features
 
-Places a single line of text on the plate according to the settings given.
+Most features include options to emboss or deboss, which work as expected.  If you also select the relevant "separate' option, an embossed feature will use a different color (making it a separate filament in the 3mf file) and in deboss mode it will make a separately-colored feature flush with the surface.
 
-If you're running in OpenSCAD and you'd like to use other fonts you can use the options at the end of the customizer, or edit the variables yourself with fonts found on your system.  When running on MakerWorld it uses their built-in font chooser.
+### Electronics Holes
 
-## SVG Information
+Cuts holes for the switch and LED on a standard Prospero single-switch plate.  The default size settings make the LED hole large enough to slip over the LED lens and the switch hole the right size to be captured by the switch nut.  See the suggested use cases section below for more information.
+
+### Full Plate Text
+
+Places a single line of text on the plate according to the settings given.  The offset for this text is measured from the center of the whole plate (with the default being centered on both axes.)
+
+### Per Switch Text
+
+Allows separate labels for each switch plate.  Enter the text with each switch separated by commas, for example "SL, US, SR" for three switches.  (Spaces will be removed from the beginning and end of each item.)  A blank switch can be created by using an extra comma.  The text settings are the same for all switches, but they're separate from the "full plate" text settings.  Offsets are based from the centerline of each switch.  When the "text separate" option is enabled, the text for each switch will be a slightly different color, which makes them appear as separate filaments in the 3mf file.  If you want them all the same, you can merge them in your slicer.
+
+### SVG Information
 
 Allows you to place an SVG file on the plate.  The file interpreter treats all colors as the same and doesn't recognize things like masks.  If your file appears as a solid square or rectangle there's probably an invisible border being drawn in the file, check the SVG in a text editor to remove extra bits.  I've included a default.svg as an example in the github repo.
 
 [Check this OpenSCAD page for information on SVG files.](https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/SVG_Import)
 
-## PNG Information
+### PNG Information
 
 Allows you to place a PNG file on the plate.  At the default scaling parameter of 0.1, this appears as 1 mm per 10 pixels.  The PNG file is interpreted as a height map with white being a full emboss or deboss (scaled to the PNG effect depth parameter), black being no height change, and greys or colors interpreted in between.  I've included a default.png as an example in the github repo.
 
 [Check this OpenSCAD page for information on PNG files and the calculation for the height based on colors.](https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Importing_Geometry#surface)
 
+## Use Cases
+
+### Decorative Blank
+
+Use a blank panel to decorate an empty section of your Prospero with your show's logo.  The default plate thickness of 1.2 mm works well for this, and the printed plate completely replaces the existing Prospero blanks.  Text or logos at 0.4 mm depth are effective, and if you use the deboss feature you may find it beneficial to print the plate face down to help with text or image clarity.  Also a smaller nozzle will make for clearer decorations.
+
+### Label Overlay
+
+For a clean, printed label on existing switches, try turning on the "electronics holes" option, set the plate thickness to 0.6 mm, and set up labels in the text fields, such as "Automation" in the full plate text field with a height offset of 15 mm, and "Red, Blue, Green" for the per switch text field with a height offset of 6 mm.  Smaller nozzles can help with text clarity.  Mount these plates over existing plates by unscrewing the switch nuts, sliding the printed plate over the switch and LED lens, holding it in place with the switch nut, then secure to the Prospero unit with the regular screws.
+
 ## Other Information
 
-Combining the text, SVG, and PNG features might result in strange results, check the 3MF in your slicer to make sure you've got what you wanted.
+Combining the text, SVG, and PNG features might result in strange results, especially if they overlap.  Check the 3MF in your slicer to make sure you've got what you wanted.
 
 Suggested printing tips: Print with a stronger profile than usual for more stiffness in very thin plates.  (For example: Wall loops - 6, infill - 25%.)
+
+The screws to hold the plates to the unit are 1/4" #4-40, as indicated in the [Prospero Parts Visual Reference provided by Ben Peoples Industries.](https://docs.benpeoples.com/prospero-dmx-cue-light-panel/prospero-parts-visual-reference#3d6a672da66f4d4db09283e1e5e6c471)
 
 ![Photograph of single plate printed in black PLA](ProsperoPlate-Single.jpg)
 
 ![Photograph of quad plate with text mounted in Prospero unit](ProsperoPlate-4WideWithText.jpg)
 
 ## Version History
+
+Version 1.4 - 2025-06-24
+
+- Add option for switch and LED holes
+- Add option for separate text per switch
 
 Version 1.3 - 2025-06-12
 
