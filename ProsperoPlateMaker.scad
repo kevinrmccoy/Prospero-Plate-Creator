@@ -338,6 +338,40 @@ module electronics_holes() {
   }
 }
 
+module text_full(in_color = false) {
+  if (in_color) {
+    color(text_full_color) {
+      text_object(
+        string=text_full_string,
+        size=text_full_size,
+        font=text_full_font_name,
+        halign=text_full_halign,
+        valign=text_full_valign,
+        spacing=text_full_spacing,
+        rotation=text_full_rotation,
+        pos_w=text_full_center_width_offset,
+        pos_h=text_full_center_height_offset,
+        effect=text_full_effect,
+        depth=text_full_effect_depth
+      );
+    }
+  } else {
+    text_object(
+      string=text_full_string,
+      size=text_full_size,
+      font=text_full_font_name,
+      halign=text_full_halign,
+      valign=text_full_valign,
+      spacing=text_full_spacing,
+      rotation=text_full_rotation,
+      pos_w=text_full_center_width_offset,
+      pos_h=text_full_center_height_offset,
+      effect=text_full_effect,
+      depth=text_full_effect_depth
+    );
+  }
+}
+
 module text_per_switch(in_color = false) {
   // Split the text_ps_string by commas into an array
   text_labels = str_split(text_ps_string, ",");
@@ -472,6 +506,9 @@ module decoration_bounding_box() {
       tapered_edge_plan_sketch();
     }
     mounting_holes();
+    if (electronics_holes) {
+      electronics_holes();
+    }
   }
 }
 
@@ -494,37 +531,24 @@ if (test_mode) {
         plate_body();
         if (enable_text_full && (text_full_effect == "emboss") && !text_full_separate) {
           intersection() {
-            // Make text object that exists only above the plate
-            text_object(
-              string=text_full_string,
-              size=text_full_size,
-              font=text_full_font_name,
-              halign=text_full_halign,
-              valign=text_full_valign,
-              spacing=text_full_spacing,
-              rotation=text_full_rotation,
-              pos_w=text_full_center_width_offset,
-              pos_h=text_full_center_height_offset,
-              effect=text_full_effect,
-              depth=text_full_effect_depth
-            );
+            text_full();
             decoration_bounding_box();
           }
         }
         if (enable_text_ps && (text_ps_effect == "emboss") && !text_ps_separate) {
-          text_per_switch(in_color=false);
+          intersection() {
+            text_per_switch(in_color=false);
+            decoration_bounding_box();
+          }
         }
-
         if (enable_svg && (svg_effect == "emboss") && !svg_separate) {
           intersection() {
-            // Make svg object that exists only above the plate
             svg_object();
             decoration_bounding_box();
           }
         }
         if (enable_png && (png_effect == "emboss") && !png_separate) {
           intersection() {
-            // Make png object that exists only above the plate
             png_object();
             decoration_bounding_box();
           }
@@ -538,19 +562,7 @@ if (test_mode) {
       }
       // Subtract debossed items
       if (enable_text_full && (text_full_effect == "deboss")) {
-        text_object(
-          string=text_full_string,
-          size=text_full_size,
-          font=text_full_font_name,
-          halign=text_full_halign,
-          valign=text_full_valign,
-          spacing=text_full_spacing,
-          rotation=text_full_rotation,
-          pos_w=text_full_center_width_offset,
-          pos_h=text_full_center_height_offset,
-          effect=text_full_effect,
-          depth=text_full_effect_depth
-        );
+        text_full();
       }
       if (enable_text_ps && (text_ps_effect == "deboss")) {
         text_per_switch(in_color=false);
@@ -564,33 +576,20 @@ if (test_mode) {
     }
   }
   if ( (enable_text_full) && (text_full_separate)) {
-    color(text_full_color) {
-      intersection() {
-        // Make text object that exists only above the plate
-        text_object(
-          string=text_full_string,
-          size=text_full_size,
-          font=text_full_font_name,
-          halign=text_full_halign,
-          valign=text_full_valign,
-          spacing=text_full_spacing,
-          rotation=text_full_rotation,
-          pos_w=text_full_center_width_offset,
-          pos_h=text_full_center_height_offset,
-          effect=text_full_effect,
-          depth=text_full_effect_depth
-        );
-        decoration_bounding_box();
-      }
+    intersection() {
+      text_full(in_color=true);
+      decoration_bounding_box();
     }
   }
   if ( (enable_text_ps) && (text_ps_separate)) {
-    text_per_switch(in_color=true); // Make text objects that exist only above the plate
+    intersection() {
+      text_per_switch(in_color=true);
+      decoration_bounding_box();
+    }
   }
   if ( (enable_svg) && (svg_separate)) {
     color(svg_color) {
       intersection() {
-        // Make svg object that exists only above the plate
         svg_object();
         decoration_bounding_box();
       }
@@ -599,7 +598,6 @@ if (test_mode) {
   if ( (enable_png) && (png_separate)) {
     color(png_color) {
       intersection() {
-        // Make png object that exists only above the plate
         png_object();
         decoration_bounding_box();
       }
