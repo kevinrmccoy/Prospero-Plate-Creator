@@ -15,9 +15,6 @@ number_of_units = 1; // [1:10]
 // Make only the corner mounting holes, rather than for every plate position?
 corner_holes_only = false;
 
-// Resolution of curves. Higher values give smoother curves but increase rendering time.
-resolution = 100; //[10, 20, 30, 50, 100]
-
 // Enable to cut holes for the switch and LED (for a single switch configuration.)
 electronics_holes = false;
 
@@ -172,6 +169,9 @@ edge_chamfer_size = 0.4; // [0:0.05:1]
 
 // Radius for the filleted corners of the overall plate [mm]. Makes corners not sharp.  0.5 is a good number.
 corner_fillet_radius = 0.5; // [0:0.05:1]
+
+// Resolution of curves. Higher values give smoother curves but increase rendering time.
+resolution = 100; //[10, 20, 30, 50, 100]
 
 /* [Prospero Fit Parameters] */
 // Don't change these unless you're having fit issues.
