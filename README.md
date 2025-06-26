@@ -69,6 +69,7 @@ The screws to hold the plates to the unit are 1/4" #4-40, as indicated in the [P
 ![Photograph of quad plate with text mounted in Prospero unit](ProsperoPlate-4WideWithText.jpg)
 
 ## Version History
+
 Version 1.5 - 2025-06-26
 
 - Add option for stiffener backing ribs to allow for mounting switches in limited circumstances
