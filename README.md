@@ -6,6 +6,8 @@ Makes custom-sized front panel plates for the [Prospero Cue Light Panel by Ben P
 
 [Posted on MakerWorld.](https://makerworld.com/en/models/1487187-prospero-plate-creator)
 
+This was created with the blessing of BPI and using it won't void your warranty or anything but please don't contact them for support.  If you have any issues or suggested improvements for this customizer, please use the issues section on [GitHub.](https://github.com/kevinrmccoy/Prospero-Plate-Creator)
+
 This customizer can run locally in OpenSCAD but if you want to do multicolor stuff with text or images that feature is only available on MakerWorld at the moment (or requires some knowledge of how to export separate objects from OpenSCAD.)
 
 Colors are just set for visibility and object separation -- MakerWorld exports separately-colored objects as different filaments in the resulting 3MF, and the actual filaments can be chosen in the slicer before printing.
