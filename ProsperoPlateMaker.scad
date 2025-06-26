@@ -160,6 +160,16 @@ png_center_width_offset = 0; // [-40:0.1:40]
 // Vertical offset from plate center for png's center point [mm].
 png_center_height_offset = 0; // [-50:0.1:50]
 
+/* [Stiffener Parameters] */
+// Set to true to add a pattern on the back of a plate that can strengthen the plate for mounting a switch and LED.  SEE README FOR CAUTIONS.
+enable_stiffener = false;
+
+// If this plate will be mounted first (left-most) or last (right-most) on the unit, select the appropriate option to allow for frame clearance.
+end_plate = "none"; // [none, first, last]
+
+// Thickness of stiffener backing [mm]. (3.0 default)
+stiffener_depth = 3.0; // 0.1
+
 /* [Advanced User Parameters] */
 // Diameter of mounting holes [mm]. (3.25 default)
 hole_diameter = 3.25; // [1:0.01:5]
@@ -197,6 +207,21 @@ switch_hole_diameter = 12.30; // 0.01
 // Distance from the top of the plate to the center of the LED hole. (11.975 default) [mm].
 led_hole_spacing = 11.975; // 0.001
 
+// Space in stiffener for switch width [mm]. (16.2 default)
+switch_width_clearance = 16.2; // 0.01
+
+// Space in stiffener for switch height [mm]. (30.2 default)
+switch_height_clearance = 30.2; // 0.01
+
+// Space in stiffener for LED width [mm]. (16.2 default)
+led_width_clearance = 16.2; // 0.01
+
+// Space in stiffener for LED height [mm]. (10.15 default)
+led_height_clearance = 10.15; // 0.01
+
+// Height of side stiffener (functionally, the height of clear area between the upper and lower mounting rails) [mm]. (60.5 default)
+stiffener_height = 60.5; // 0.01
+
 /* [Hidden] */
 
 test_mode = false;
@@ -213,6 +238,7 @@ text_ps_color = "Orange";
 svg_color = "Yellow";
 png_color = "Pink";
 png_depth_scale = png_effect_depth / 100;
+inter_unit_extra = inter_unit_spacing - single_unit_width;
 
 // --- Calculate Overall Plate Width ---
 generated_plate_width =
@@ -256,6 +282,25 @@ module tapered_edge_plan_sketch() {
   xy_offset_for_taper = edge_chamfer_size;
   offset(delta=-xy_offset_for_taper) {
     main_body_plan_sketch(); // Offset from the main body profile
+  }
+}
+
+module stiffener_body() {
+  difference() {
+    translate([0, 0, (-1 * ( (stiffener_depth - thin_dim) / 2))]) {
+      cube([generated_plate_width, stiffener_height, stiffener_depth], center=true);
+    }
+    led_hole_center = (plate_height / 2) - led_hole_spacing;
+    switch_hole_center = (plate_height / 2) - switch_hole_spacing;
+    for (i = [0:max(0, number_of_units - 1)]) {
+      current_unit_width_center = (number_of_units == 1) ? 0 : (i - (number_of_units - 1) / 2) * inter_unit_spacing;
+      translate([current_unit_width_center, led_hole_center, (-1 * ( (stiffener_depth - thin_dim) / 2))]) {
+        cube(size=[led_width_clearance, led_height_clearance, stiffener_depth + thin_dim], center=true);
+      }
+      translate([current_unit_width_center, -switch_hole_center, (-1 * ( (stiffener_depth - thin_dim) / 2))]) {
+        cube(size=[switch_width_clearance, switch_height_clearance, stiffener_depth + thin_dim], center=true);
+      }
+    }
   }
 }
 
@@ -500,15 +545,26 @@ module png_object() {
 
 module decoration_bounding_box() {
   // Makes a bounding box for allowable text placement.
-  box_height = safe_bound_height;
+  box_height = enable_stiffener ? (stiffener_depth + safe_bound_height + 2 * thin_dim) : safe_bound_height;
+  box_depth = enable_stiffener ? (stiffener_depth + 2 * thin_dim) : 0;
   difference() {
-    linear_extrude(height=box_height) {
-      tapered_edge_plan_sketch();
+    translate([0, 0, -1 * box_depth]) {
+      linear_extrude(height=box_height) {
+        tapered_edge_plan_sketch();
+      }
     }
     mounting_holes();
     if (electronics_holes) {
       electronics_holes();
     }
+  }
+}
+
+module plate_end_cutoff(direction = "first") {
+  end_direction = direction == "first" ? -1 : 1;
+  cutoff_center = (generated_plate_width / 2) - 1;
+  translate([end_direction * cutoff_center, 0, -1 * ( (stiffener_depth + thin_dim) / 2)]) {
+    cube(size=[2, plate_height, stiffener_depth], center=true);
   }
 }
 
@@ -523,12 +579,19 @@ module null_object() {
 // --- Main Assembly ---
 if (test_mode) {
   echo("test mode");
+  stiffener_body();
 } else if (number_of_units > 0) {
   color(plate_color) {
     difference() {
       // Start with plate body with embossed non-separate items
       union() {
         plate_body();
+        if (enable_stiffener) {
+          intersection() {
+            stiffener_body();
+            decoration_bounding_box();
+          }
+        }
         if (enable_text_full && (text_full_effect == "emboss") && !text_full_separate) {
           intersection() {
             text_full();
@@ -559,6 +622,9 @@ if (test_mode) {
       // Subtract electronics holes
       if (electronics_holes) {
         electronics_holes();
+      }
+      if ( (enable_stiffener) && (end_plate != "none")) {
+        plate_end_cutoff(direction=end_plate);
       }
       // Subtract debossed items
       if (enable_text_full && (text_full_effect == "deboss")) {
