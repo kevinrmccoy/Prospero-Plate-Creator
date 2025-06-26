@@ -38,6 +38,10 @@ Allows you to place a PNG file on the plate.  At the default scaling parameter o
 
 [Check this OpenSCAD page for information on PNG files and the calculation for the height based on colors.](https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Importing_Geometry#surface)
 
+### Stiffener Backing Information
+
+Adds a set of features to the back of the plate that can strengthen the plate if used to mount a switch and LED directly.  See the related use case below for important caveats.  When the plate will be mounted on the first switch position (furthest left) or last position (furthest right), make sure to set the "end_plate" parameter as appropriate to cut out enough clearance for the side of the frame.
+
 ## Use Cases
 
 ### Decorative Blank
@@ -47,6 +51,10 @@ Use a blank panel to decorate an empty section of your Prospero with your show's
 ### Label Overlay
 
 For a clean, printed label on existing switches, try turning on the "electronics holes" option, set the plate thickness to 0.6 mm, and set up labels in the text fields, such as "Automation" in the full plate text field with a height offset of 15 mm, and "Red, Blue, Green" for the per switch text field with a height offset of 6 mm.  Smaller nozzles can help with text clarity.  Mount these plates over existing plates by unscrewing the switch nuts, sliding the printed plate over the switch and LED lens, holding it in place with the switch nut, then secure to the Prospero unit with the regular screws.
+
+### Switch Mounting
+
+THIS IS EXPERIMENTAL.  3D printed switch plates cannot be as strong as metal plates so use this with caution.  If you intend to mount a switch to the plate, it's recommended to use extra wall loops and a much higher infill percentage.  Printing wider plates for multiple switches improves stability as a single plate is able to twist horizontally with sideways pressure on the switch.  This is a use case that should probably be reserved for emergencies or unusual circumstances.
 
 ## Other Information
 
@@ -61,6 +69,9 @@ The screws to hold the plates to the unit are 1/4" #4-40, as indicated in the [P
 ![Photograph of quad plate with text mounted in Prospero unit](ProsperoPlate-4WideWithText.jpg)
 
 ## Version History
+Version 1.5 - 2025-06-26
+
+- Add option for stiffener backing ribs to allow for mounting switches in limited circumstances
 
 Version 1.4 - 2025-06-24
 
