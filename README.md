@@ -14,6 +14,8 @@ Colors are just set for visibility and object separation -- MakerWorld exports s
 
 ## Features
 
+NOTE: Most features have an "enable" toggle at the beginning of their section.  Make sure you enable it for that feature to be rendered.
+
 Most features include options to emboss or deboss, which work as expected.  If you also select the relevant "separate' option, an embossed feature will use a different color (making it a separate filament in the 3mf file) and in deboss mode it will make a separately-colored feature flush with the surface.
 
 ### Electronics Holes
