@@ -145,7 +145,7 @@ svg_separate = false;
 svg_effect_depth = 0.4; // [0.1:0.05:2.0]
 
 // SVG orientation on the plate.
-svg_rotation = 90; // [0:45:360]
+svg_rotation = 0; // [0:45:360]
 
 // SVG size
 svg_scale = 0.1; // [0.01:0.01:3]
@@ -176,7 +176,7 @@ png_effect_depth = 0.4; // [0.1:0.05:2.0]
 png_scale = 0.1; // [0.01:0.01:3]
 
 // PNG orientation on the plate.
-png_rotation = 90; // [0:45:360]
+png_rotation = 0; // [0:45:360]
 
 // Horizontal offset from plate center for png's center point [mm].
 png_center_width_offset = 0; // [-40:0.1:40]
@@ -256,7 +256,7 @@ text_full_effect_depth_effective = ( (text_full_effect == "deboss") && (text_ful
 svg_effect_depth_effective = ( (svg_effect == "deboss") && (svg_effect_depth > plate_thickness)) ? plate_thickness : svg_effect_depth;
 png_effect_depth_effective = ( (png_effect == "deboss") && (png_effect_depth > plate_thickness)) ? plate_thickness : png_effect_depth;
 safe_bound_height = plate_thickness + 2 * max(0, text_full_effect_depth_effective, svg_effect_depth_effective, png_effect_depth_effective) + 2 * thin_dim;
-plate_color = "Black";
+plate_color = "DarkSlateGrey";
 text_full_color = "White";
 text_full_backing_color = "Blue";
 text_ps_color = "SaddleBrown";

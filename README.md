@@ -26,9 +26,15 @@ Cuts holes for the switch and LED on a standard Prospero single-switch plate.  T
 
 Places a single line of text on the plate according to the settings given.  The offset for this text is measured from the center of the whole plate (with the default being centered on both axes.)
 
+Choose the "enable text full backing" option to have a different color behind the text, giving the apperance of a text label on colored tape.
+
 ### Per Switch Text
 
 Allows separate labels for each switch plate.  Enter the text with each switch separated by commas, for example "SL, US, SR" for three switches.  (Spaces will be removed from the beginning and end of each item.)  A blank switch can be created by using an extra comma.  The text settings are the same for all switches, but they're separate from the "full plate" text settings.  Offsets are based from the centerline of each switch.  When the "text separate" option is enabled, the text for each switch will be a slightly different color, which makes them appear as separate filaments in the 3mf file.  If you want them all the same, you can merge them in your slicer.
+
+Choose the "enable text ps backing" option to have a different color behind the text, giving the apperance of a text label on colored tape.  This color will be different for each switch allowing you to make color and filament choices in your slicer.
+
+![Screenshot of three-switch plate with text color backings.](AMSMadness.png)
 
 ### SVG Information
 
