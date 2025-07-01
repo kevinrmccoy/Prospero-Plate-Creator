@@ -64,6 +64,18 @@ text_full_valign = "baseline"; // ["top", "center", "baseline", "bottom"]
 // Text spacing between characters.
 text_full_spacing = 1; // [1:0.05:5]
 
+// Add a backing rectangle the width of the plate around the text.
+enable_text_full_backing = false;
+
+// Tweak the size of the backing rectangle (from its default which is based on the size of the text.)
+text_full_backing_size = 0; // [-2:0.1:2]
+
+// Tweak the vertical position of the backing rectangle (from its default which is based on the text's center.)
+text_full_backing_height_adjust = 0; // [-6:0.1:6]
+
+// Depth of backing rectangle [mm]. (Default is 0.4 mm.)
+text_full_backing_depth = 0.4; // [0.2:0.1:2]
+
 /* [Per Switch Text Parameters] */
 // Set to true to add text per switch, false to disable.
 enable_text_ps = false;
@@ -104,6 +116,18 @@ text_ps_valign = "baseline"; // ["top", "center", "baseline", "bottom"]
 // Text spacing between characters.
 text_ps_spacing = 1; // [1:0.05:5]
 
+// Add backing rectangles the width of each switch plate around the text. See the description or readme for color info.
+enable_text_ps_backing = false;
+
+// Tweak the size of the backing rectangles (from its default which is based on the size of the text.)
+text_ps_backing_size = 0; // [-2:0.1:2]
+
+// Tweak the vertical position of the backing rectangles (from its default which is based on the text's center.)
+text_ps_backing_height_adjust = 0; // [-6:0.1:6]
+
+// Depth of backing rectangles [mm]. (Default is 0.4 mm.)
+text_ps_backing_depth = 0.4; // [0.2:0.1:2]
+
 /* [SVG Parameters] */
 // Set to true to include an SVG.
 enable_svg = false;
@@ -121,7 +145,7 @@ svg_separate = false;
 svg_effect_depth = 0.4; // [0.1:0.05:2.0]
 
 // SVG orientation on the plate.
-svg_rotation = 90; // [0:45:360]
+svg_rotation = 0; // [0:45:360]
 
 // SVG size
 svg_scale = 0.1; // [0.01:0.01:3]
@@ -152,7 +176,7 @@ png_effect_depth = 0.4; // [0.1:0.05:2.0]
 png_scale = 0.1; // [0.01:0.01:3]
 
 // PNG orientation on the plate.
-png_rotation = 90; // [0:45:360]
+png_rotation = 0; // [0:45:360]
 
 // Horizontal offset from plate center for png's center point [mm].
 png_center_width_offset = 0; // [-40:0.1:40]
@@ -234,7 +258,8 @@ png_effect_depth_effective = ( (png_effect == "deboss") && (png_effect_depth > p
 safe_bound_height = plate_thickness + 2 * max(0, text_full_effect_depth_effective, svg_effect_depth_effective, png_effect_depth_effective) + 2 * thin_dim;
 plate_color = "DarkSlateGrey";
 text_full_color = "White";
-text_ps_color = "Orange";
+text_full_backing_color = "Blue";
+text_ps_color = "SaddleBrown";
 svg_color = "Yellow";
 png_color = "Pink";
 png_depth_scale = png_effect_depth / 100;
@@ -417,6 +442,12 @@ module text_full(in_color = false) {
   }
 }
 
+module text_full_backing() {
+  translate([0, (text_full_center_height_offset + (text_full_size * 0.4) + text_full_backing_height_adjust), ( (plate_thickness + thin_dim) - (text_full_backing_depth / 2))]) {
+    cube(size=[(generated_plate_width - 1), ( (text_full_size * 1.4) + text_full_backing_size), (text_full_backing_depth + (thin_dim))], center=true);
+  }
+}
+
 module text_per_switch(in_color = false) {
   // Split the text_ps_string by commas into an array
   text_labels = str_split(text_ps_string, ",");
@@ -432,7 +463,7 @@ module text_per_switch(in_color = false) {
     if (in_color) {
       t_r = 1;
       t_g = ( (i * 10) / 255);
-      t_b = ( (i * 10) / 255);
+      t_b = 1;
       color([t_r, t_g, t_b]) {
         text_object(
           string=label,
@@ -466,6 +497,28 @@ module text_per_switch(in_color = false) {
   }
 }
 
+module text_per_switch_backing(in_color = false) {
+  for (i = [0:max(0, min(number_of_units - 1))]) {
+    // Calculate X position for each unit (centered)
+    current_unit_width_center =
+      (number_of_units == 1) ? 0
+      : (i - (number_of_units - 1) / 2) * inter_unit_spacing;
+    if (in_color) {
+      t_r = 0.25;
+      t_g = ( (i * 10) / 255);
+      t_b = ( (i * 10) / 255);
+      color([t_r, t_g, t_b]) {
+        translate([current_unit_width_center, (text_ps_center_height_offset + (text_ps_size * 0.4) + text_ps_backing_height_adjust), ( (plate_thickness + thin_dim) - (text_ps_backing_depth / 2))]) {
+          cube(size=[(single_unit_width - .4), ( (text_ps_size * 1.4) + text_ps_backing_size), (text_ps_backing_depth + (thin_dim))], center=true);
+        }
+      }
+    } else {
+      translate([current_unit_width_center, (text_ps_center_height_offset + (text_ps_size * 0.4) + text_ps_backing_height_adjust), ( (plate_thickness + thin_dim) - (text_ps_backing_depth / 2))]) {
+        cube(size=[(single_unit_width - .4), ( (text_ps_size * 1.4) + text_ps_backing_size), (text_ps_backing_depth + (thin_dim))], center=true);
+      }
+    }
+  }
+}
 module text_object(string, size, font, halign, valign, spacing, rotation, pos_w, pos_h, effect, depth) {
   // Z-level of the main flat top surface of the plate (this is below the top taper)
   // Text will be placed relative to this surface.
@@ -628,16 +681,40 @@ if (test_mode) {
       }
       // Subtract debossed items
       if (enable_text_full && (text_full_effect == "deboss")) {
-        text_full();
+        intersection() {
+          text_full();
+          decoration_bounding_box();
+        }
       }
       if (enable_text_ps && (text_ps_effect == "deboss")) {
-        text_per_switch(in_color=false);
+        intersection() {
+          text_per_switch(in_color=false);
+          decoration_bounding_box();
+        }
       }
       if (enable_svg && (svg_effect == "deboss")) {
-        svg_object();
+        intersection() {
+          svg_object();
+          decoration_bounding_box();
+        }
       }
       if (enable_png && (png_effect == "deboss")) {
-        png_object();
+        intersection() {
+          png_object();
+          decoration_bounding_box();
+        }
+      }
+      if ( (enable_text_full_backing) && (enable_text_full)) {
+        intersection() {
+          text_full_backing();
+          decoration_bounding_box();
+        }
+      }
+      if ( (enable_text_ps_backing) && (enable_text_ps)) {
+        intersection() {
+          text_per_switch_backing();
+          decoration_bounding_box();
+        }
       }
     }
   }
@@ -667,6 +744,26 @@ if (test_mode) {
         png_object();
         decoration_bounding_box();
       }
+    }
+  }
+  if ( (enable_text_full_backing) && (enable_text_full)) {
+    color(text_full_backing_color) {
+      intersection() {
+        difference() {
+          text_full_backing();
+          text_full();
+        }
+        decoration_bounding_box();
+      }
+    }
+  }
+  if ( (enable_text_ps_backing) && (enable_text_ps)) {
+    intersection() {
+      difference() {
+        text_per_switch_backing(in_color = true);
+        text_per_switch();
+      }
+      decoration_bounding_box();
     }
   }
 } else {
