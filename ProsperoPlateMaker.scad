@@ -465,7 +465,6 @@ module text_per_switch(in_color = false) {
       t_g = ( (i * 10) / 255);
       t_b = 1;
       color([t_r, t_g, t_b]) {
-        echo("text ps clr", this_color);
         text_object(
           string=label,
           size=text_ps_size,
@@ -509,7 +508,6 @@ module text_per_switch_backing(in_color = false) {
       t_g = ( (i * 10) / 255);
       t_b = ( (i * 10) / 255);
       color([t_r, t_g, t_b]) {
-        echo("backing ps clr", this_color);
         translate([current_unit_width_center, (text_ps_center_height_offset + (text_ps_size * 0.4) + text_ps_backing_height_adjust), ( (plate_thickness + thin_dim) - (text_ps_backing_depth / 2))]) {
           cube(size=[(single_unit_width - .4), ( (text_ps_size * 1.4) + text_ps_backing_size), (text_ps_backing_depth + (thin_dim))], center=true);
         }
