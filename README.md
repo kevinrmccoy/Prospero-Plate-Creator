@@ -80,6 +80,10 @@ The screws to hold the plates to the unit are 1/4" #4-40, as indicated in the [P
 
 ## Version History
 
+Version 1.6 - 2025-07-01
+
+- Add option for text background rectangles for color-backed labels.
+
 Version 1.5 - 2025-06-26
 
 - Add option for stiffener backing ribs to allow for mounting switches in limited circumstances
