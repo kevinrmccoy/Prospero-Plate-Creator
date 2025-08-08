@@ -68,7 +68,7 @@ text_full_spacing = 1; // [1:0.05:5]
 enable_text_full_backing = false;
 
 // Tweak the size of the backing rectangle (from its default which is based on the size of the text.)
-text_full_backing_size = 0; // [-2:0.1:2]
+text_full_backing_size = 0; // [-4:0.1:20]
 
 // Tweak the vertical position of the backing rectangle (from its default which is based on the text's center.)
 text_full_backing_height_adjust = 0; // [-6:0.1:6]
@@ -120,7 +120,7 @@ text_ps_spacing = 1; // [1:0.05:5]
 enable_text_ps_backing = false;
 
 // Tweak the size of the backing rectangles (from its default which is based on the size of the text.)
-text_ps_backing_size = 0; // [-2:0.1:2]
+text_ps_backing_size = 0; // [-4:0.1:20]
 
 // Tweak the vertical position of the backing rectangles (from its default which is based on the text's center.)
 text_ps_backing_height_adjust = 0; // [-6:0.1:6]
