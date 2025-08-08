@@ -125,6 +125,9 @@ text_ps_backing_size = 0; // [-4:0.1:20]
 // Tweak the vertical position of the backing rectangles (from its default which is based on the text's center.)
 text_ps_backing_height_adjust = 0; // [-6:0.1:6]
 
+// Tweak the size of the gap between the color blocks behind each switch's label (0.4 default) [mm].
+text_ps_width_size_adjust = 0.4; // [0:0.1:4]
+
 // Depth of backing rectangles [mm]. (Default is 0.4 mm.)
 text_ps_backing_depth = 0.4; // [0.2:0.1:2]
 
@@ -509,12 +512,12 @@ module text_per_switch_backing(in_color = false) {
       t_b = ( (i * 10) / 255);
       color([t_r, t_g, t_b]) {
         translate([current_unit_width_center, (text_ps_center_height_offset + (text_ps_size * 0.4) + text_ps_backing_height_adjust), ( (plate_thickness + thin_dim) - (text_ps_backing_depth / 2))]) {
-          cube(size=[(single_unit_width - .4), ( (text_ps_size * 1.4) + text_ps_backing_size), (text_ps_backing_depth + (thin_dim))], center=true);
+          cube(size=[(single_unit_width - text_ps_width_size_adjust), ( (text_ps_size * 1.4) + text_ps_backing_size), (text_ps_backing_depth + (thin_dim))], center=true);
         }
       }
     } else {
       translate([current_unit_width_center, (text_ps_center_height_offset + (text_ps_size * 0.4) + text_ps_backing_height_adjust), ( (plate_thickness + thin_dim) - (text_ps_backing_depth / 2))]) {
-        cube(size=[(single_unit_width - .4), ( (text_ps_size * 1.4) + text_ps_backing_size), (text_ps_backing_depth + (thin_dim))], center=true);
+        cube(size=[(single_unit_width - text_ps_width_size_adjust), ( (text_ps_size * 1.4) + text_ps_backing_size), (text_ps_backing_depth + (thin_dim))], center=true);
       }
     }
   }
