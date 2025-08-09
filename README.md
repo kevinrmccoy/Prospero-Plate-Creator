@@ -80,6 +80,10 @@ The screws to hold the plates to the unit are 1/4" #4-40, as indicated in the [P
 
 ## Version History
 
+Version 1.61 - 2025-08-08
+
+- Adjust text backing defaults and ranges.
+
 Version 1.6 - 2025-07-01
 
 - Add option for text background rectangles for color-backed labels.
