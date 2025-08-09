@@ -501,6 +501,7 @@ module text_per_switch(in_color = false) {
 }
 
 module text_per_switch_backing(in_color = false) {
+  individual_unit_width = generated_plate_width / number_of_units;
   for (i = [0:max(0, min(number_of_units - 1))]) {
     // Calculate X position for each unit (centered)
     current_unit_width_center =
@@ -512,12 +513,12 @@ module text_per_switch_backing(in_color = false) {
       t_b = ( (i * 10) / 255);
       color([t_r, t_g, t_b]) {
         translate([current_unit_width_center, (text_ps_center_height_offset + (text_ps_size * 0.4) + text_ps_backing_height_adjust), ( (plate_thickness + thin_dim) - (text_ps_backing_depth / 2))]) {
-          cube(size=[(single_unit_width - text_ps_width_size_adjust), ( (text_ps_size * 1.4) + text_ps_backing_size), (text_ps_backing_depth + (thin_dim))], center=true);
+          cube(size=[(individual_unit_width - text_ps_width_size_adjust), ( (text_ps_size * 1.4) + text_ps_backing_size), (text_ps_backing_depth + (thin_dim))], center=true);
         }
       }
     } else {
       translate([current_unit_width_center, (text_ps_center_height_offset + (text_ps_size * 0.4) + text_ps_backing_height_adjust), ( (plate_thickness + thin_dim) - (text_ps_backing_depth / 2))]) {
-        cube(size=[(single_unit_width - text_ps_width_size_adjust), ( (text_ps_size * 1.4) + text_ps_backing_size), (text_ps_backing_depth + (thin_dim))], center=true);
+        cube(size=[(individual_unit_width - text_ps_width_size_adjust), ( (text_ps_size * 1.4) + text_ps_backing_size), (text_ps_backing_depth + (thin_dim))], center=true);
       }
     }
   }
