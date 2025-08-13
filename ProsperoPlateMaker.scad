@@ -86,7 +86,7 @@ text_ps_effect = "emboss"; // [emboss, deboss]
 // Make multi-color print? (When effect is "deboss" this will fill the debossed part with a separate color.)
 text_ps_separate = true;
 
-// A comma-delimited list of text to show for each switch, for example "a, b, c".  Any leading or trailing spaces will be removed.  Excess items will be ignored.  
+// A comma-delimited list of text to show for each switch, for example "a, b, c".  Any leading or trailing spaces will be removed.  Excess items will be ignored.
 text_ps_string = "a, b, c";
 
 // Font size. [mm]
@@ -198,6 +198,12 @@ end_plate = "none"; // [none, first, last]
 stiffener_depth = 3.0; // 0.1
 
 /* [Advanced User Parameters] */
+// Adjustment factor for the space between lines when using multiline text.
+multiline_space_factor = 1.2; // [0.1:0.1:2.0]
+
+// Additional adjustment factor for the size of the backing when using multiline text.
+multiline_backing_space_factor = 1.2; //[0.1:0.1:2.0]
+
 // Diameter of mounting holes [mm]. (3.25 default)
 hole_diameter = 3.25; // [1:0.01:5]
 
@@ -226,7 +232,7 @@ single_unit_width = 19; // 0.001
 inter_unit_spacing = 19.304; // 0.001
 
 // Distance from the bottom of the plate to the center of the switch hole. (30.35 default) [mm].
-switch_hole_spacing = 30.35; // 0.001
+switch_hole_spacing = 30.35; // 0.01
 
 // Switch hole diameter. (12.30 default) [mm].
 switch_hole_diameter = 12.30; // 0.01
@@ -412,10 +418,32 @@ module electronics_holes() {
 }
 
 module text_full(in_color = false) {
-  if (in_color) {
-    color(text_full_color) {
+  text_lines = str_split(text_full_string, "\\");
+  num_lines = len(text_lines);
+  line_height = text_full_size * multiline_space_factor;
+  total_height = num_lines * line_height;
+  height_offset = ( (num_lines - 1) * line_height) / 2;
+  for (i = [0:num_lines - 1]) {
+    height_with_offset = (height_offset - (i * line_height)) + text_full_center_height_offset;
+    if (in_color) {
+      color(text_full_color) {
+        text_object(
+          string=text_lines[i],
+          size=text_full_size,
+          font=text_full_font_name,
+          halign=text_full_halign,
+          valign=text_full_valign,
+          spacing=text_full_spacing,
+          rotation=text_full_rotation,
+          pos_w=text_full_center_width_offset,
+          pos_h=height_with_offset,
+          effect=text_full_effect,
+          depth=text_full_effect_depth
+        );
+      }
+    } else {
       text_object(
-        string=text_full_string,
+        string=text_lines[i],
         size=text_full_size,
         font=text_full_font_name,
         halign=text_full_halign,
@@ -423,31 +451,21 @@ module text_full(in_color = false) {
         spacing=text_full_spacing,
         rotation=text_full_rotation,
         pos_w=text_full_center_width_offset,
-        pos_h=text_full_center_height_offset,
+        pos_h=height_with_offset,
         effect=text_full_effect,
         depth=text_full_effect_depth
       );
     }
-  } else {
-    text_object(
-      string=text_full_string,
-      size=text_full_size,
-      font=text_full_font_name,
-      halign=text_full_halign,
-      valign=text_full_valign,
-      spacing=text_full_spacing,
-      rotation=text_full_rotation,
-      pos_w=text_full_center_width_offset,
-      pos_h=text_full_center_height_offset,
-      effect=text_full_effect,
-      depth=text_full_effect_depth
-    );
   }
 }
 
 module text_full_backing() {
+  text_lines = str_split(text_full_string, "\\");
+  num_lines = len(text_lines);
+  line_height = text_full_size * multiline_space_factor * multiline_backing_space_factor;
+  total_height = num_lines * line_height;
   translate([0, (text_full_center_height_offset + (text_full_size * 0.4) + text_full_backing_height_adjust), ( (plate_thickness + thin_dim) - (text_full_backing_depth / 2))]) {
-    cube(size=[(generated_plate_width - 1), ( (text_full_size * 1.4) + text_full_backing_size), (text_full_backing_depth + (thin_dim))], center=true);
+    cube(size=[(generated_plate_width + 1), (total_height + text_full_backing_size), (text_full_backing_depth + (thin_dim))], center=true);
   }
 }
 
@@ -462,14 +480,36 @@ module text_per_switch(in_color = false) {
       : (i - (number_of_units - 1) / 2) * inter_unit_spacing;
     // Get the label for this unit (trim whitespace)
     label = str_strip(text_labels[i], " ");
-    // Place the text object for this unit
-    if (in_color) {
-      t_r = 1;
-      t_g = ( (i * 10) / 255);
-      t_b = 1;
-      color([t_r, t_g, t_b]) {
+    text_lines = str_split(label, "\\");
+    num_lines = len(text_lines);
+    line_height = text_ps_size * multiline_space_factor;
+    total_height = num_lines * line_height;
+    height_offset = ( (num_lines - 1) * line_height) / 2;
+    for (j = [0:num_lines - 1]) {
+      height_with_offset = (height_offset - (j * line_height)) + text_ps_center_height_offset;
+      // Place the text object for this unit
+      if (in_color) {
+        t_r = 1;
+        t_g = ( (i * 10) / 255);
+        t_b = 1;
+        color([t_r, t_g, t_b]) {
+          text_object(
+            string=text_lines[j],
+            size=text_ps_size,
+            font=text_ps_font_mw,
+            halign=text_ps_halign,
+            valign=text_ps_valign,
+            spacing=text_ps_spacing,
+            rotation=text_ps_rotation,
+            pos_w=current_unit_width_center + text_ps_center_width_offset,
+            pos_h=height_with_offset,
+            effect=text_ps_effect,
+            depth=text_ps_effect_depth
+          );
+        }
+      } else {
         text_object(
-          string=label,
+          string=text_lines[j],
           size=text_ps_size,
           font=text_ps_font_mw,
           halign=text_ps_halign,
@@ -477,31 +517,19 @@ module text_per_switch(in_color = false) {
           spacing=text_ps_spacing,
           rotation=text_ps_rotation,
           pos_w=current_unit_width_center + text_ps_center_width_offset,
-          pos_h=text_ps_center_height_offset,
+          pos_h=height_with_offset,
           effect=text_ps_effect,
           depth=text_ps_effect_depth
         );
       }
-    } else {
-      text_object(
-        string=label,
-        size=text_ps_size,
-        font=text_ps_font_mw,
-        halign=text_ps_halign,
-        valign=text_ps_valign,
-        spacing=text_ps_spacing,
-        rotation=text_ps_rotation,
-        pos_w=current_unit_width_center + text_ps_center_width_offset,
-        pos_h=text_ps_center_height_offset,
-        effect=text_ps_effect,
-        depth=text_ps_effect_depth
-      );
     }
   }
 }
 
 module text_per_switch_backing(in_color = false) {
-  individual_unit_width = generated_plate_width / number_of_units;
+  individual_unit_width = (generated_plate_width + 1) / number_of_units;
+  line_height = text_ps_size * multiline_space_factor * multiline_backing_space_factor;
+  total_height = max_lines(text_ps_string) * line_height;
   for (i = [0:max(0, min(number_of_units - 1))]) {
     // Calculate X position for each unit (centered)
     current_unit_width_center =
@@ -513,16 +541,30 @@ module text_per_switch_backing(in_color = false) {
       t_b = ( (i * 10) / 255);
       color([t_r, t_g, t_b]) {
         translate([current_unit_width_center, (text_ps_center_height_offset + (text_ps_size * 0.4) + text_ps_backing_height_adjust), ( (plate_thickness + thin_dim) - (text_ps_backing_depth / 2))]) {
-          cube(size=[(individual_unit_width - text_ps_width_size_adjust), ( (text_ps_size * 1.4) + text_ps_backing_size), (text_ps_backing_depth + (thin_dim))], center=true);
+          cube(size=[(individual_unit_width - text_ps_width_size_adjust), (total_height + text_ps_backing_size), (text_ps_backing_depth + (thin_dim))], center=true);
         }
       }
     } else {
       translate([current_unit_width_center, (text_ps_center_height_offset + (text_ps_size * 0.4) + text_ps_backing_height_adjust), ( (plate_thickness + thin_dim) - (text_ps_backing_depth / 2))]) {
-        cube(size=[(individual_unit_width - text_ps_width_size_adjust), ( (text_ps_size * 1.4) + text_ps_backing_size), (text_ps_backing_depth + (thin_dim))], center=true);
+        cube(size=[(individual_unit_width - text_ps_width_size_adjust), (total_height + text_ps_backing_size), (text_ps_backing_depth + (thin_dim))], center=true);
       }
     }
   }
 }
+
+// --- CORRECTED FUNCTION ---
+function max_lines(input_string) =
+    let(
+        // First, ensure the input is a string before splitting. Default to a safe value if not.
+        parts = is_string(input_string) ? str_split(input_string, ",") : [""],
+        // Then, for each part, ensure it's a string before finding characters.
+        counts = [for (p = parts)
+                     let(indices = is_string(p) ? str_find(p, "\\") : undef)
+                     is_undef(indices) ? 0 : len(indices)
+                 ]
+    )
+    max(counts) + 1;
+
 module text_object(string, size, font, halign, valign, spacing, rotation, pos_w, pos_h, effect, depth) {
   // Z-level of the main flat top surface of the plate (this is below the top taper)
   // Text will be placed relative to this surface.
@@ -764,7 +806,7 @@ if (test_mode) {
   if ( (enable_text_ps_backing) && (enable_text_ps)) {
     intersection() {
       difference() {
-        text_per_switch_backing(in_color = true);
+        text_per_switch_backing(in_color=true);
         text_per_switch();
       }
       decoration_bounding_box();
