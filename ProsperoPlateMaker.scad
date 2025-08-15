@@ -87,7 +87,7 @@ text_ps_effect = "emboss"; // [emboss, deboss]
 text_ps_separate = true;
 
 // A comma-delimited list of text to show for each switch, for example "a, b, c".  Any leading or trailing spaces will be removed.  Excess items will be ignored.
-text_ps_string = "a,b\\b\\b,c\\d";
+text_ps_string = "a,b,c";
 
 // Font size. [mm]
 text_ps_size = 4; // [1:0.1:20]
