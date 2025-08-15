@@ -87,7 +87,7 @@ text_ps_effect = "emboss"; // [emboss, deboss]
 text_ps_separate = true;
 
 // A comma-delimited list of text to show for each switch, for example "a, b, c".  Any leading or trailing spaces will be removed.  Excess items will be ignored.
-text_ps_string = "a, b, c";
+text_ps_string = "a,b\\b\\b,c\\d";
 
 // Font size. [mm]
 text_ps_size = 4; // [1:0.1:20]
@@ -280,6 +280,12 @@ generated_plate_width =
   : // Make single plate for unit values below 1.
   (number_of_units == 1) ? single_unit_width
   : (single_unit_width + (number_of_units - 1) * inter_unit_spacing);
+
+// --- Calculate Max Number of Lines in Per Switch Text ---
+text_ps_strings = str_split(text_ps_string, ",");
+text_ps_strings_lines = [ for (i=[0:len(text_ps_strings)-1]) len(str_find(text_ps_strings[i], "\\", all=true)) ];
+text_ps_strings_max_lines = max(text_ps_strings_lines) + 1;
+echo(text_ps_strings_max_lines = text_ps_strings_max_lines);
 
 // --- Calculated Taper Z-Dim ---
 // Z-height of the tapered/chamfered edge portion.
@@ -529,7 +535,7 @@ module text_per_switch(in_color = false) {
 module text_per_switch_backing(in_color = false) {
   individual_unit_width = (generated_plate_width + 1) / number_of_units;
   line_height = text_ps_size * multiline_space_factor * multiline_backing_space_factor;
-  total_height = max_lines(text_ps_string) * line_height;
+  total_height = text_ps_strings_max_lines * line_height;
   for (i = [0:max(0, min(number_of_units - 1))]) {
     // Calculate X position for each unit (centered)
     current_unit_width_center =
@@ -551,19 +557,6 @@ module text_per_switch_backing(in_color = false) {
     }
   }
 }
-
-// --- CORRECTED FUNCTION ---
-function max_lines(input_string) =
-    let(
-        // First, ensure the input is a string before splitting. Default to a safe value if not.
-        parts = is_string(input_string) ? str_split(input_string, ",") : [""],
-        // Then, for each part, ensure it's a string before finding characters.
-        counts = [for (p = parts)
-                     let(indices = is_string(p) ? str_find(p, "\\") : undef)
-                     is_undef(indices) ? 0 : len(indices)
-                 ]
-    )
-    max(counts) + 1;
 
 module text_object(string, size, font, halign, valign, spacing, rotation, pos_w, pos_h, effect, depth) {
   // Z-level of the main flat top surface of the plate (this is below the top taper)
