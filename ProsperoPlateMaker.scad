@@ -283,7 +283,7 @@ generated_plate_width =
 
 // --- Calculate Max Number of Lines in Per Switch Text ---
 text_ps_strings = str_split(text_ps_string, ",");
-text_ps_strings_lines = [ for (i=[0:len(text_ps_strings)-1]) len(str_find(text_ps_strings[i], "\\", all=true)) ];
+text_ps_strings_lines = [for (i = [0:len(text_ps_strings) - 1]) len(str_find(text_ps_strings[i], "\\", all=true))];
 text_ps_strings_max_lines = max(text_ps_strings_lines) + 1;
 
 // --- Calculated Taper Z-Dim ---
@@ -464,13 +464,21 @@ module text_full(in_color = false) {
   }
 }
 
-module text_full_backing() {
+module text_full_backing(in_color = false) {
   text_lines = str_split(text_full_string, "\\");
   num_lines = len(text_lines);
   line_height = text_full_size * multiline_space_factor * multiline_backing_space_factor;
   total_height = num_lines * line_height;
-  translate([0, (text_full_center_height_offset + (text_full_size * 0.4) + text_full_backing_height_adjust), ( (plate_thickness + thin_dim) - (text_full_backing_depth / 2))]) {
-    cube(size=[(generated_plate_width + 1), (total_height + text_full_backing_size), (text_full_backing_depth + (thin_dim))], center=true);
+  if (in_color) {
+    color(text_full_backing_color) {
+      translate([0, (text_full_center_height_offset + (text_full_size * 0.4) + text_full_backing_height_adjust), ( (plate_thickness + thin_dim) - (text_full_backing_depth / 2))]) {
+        cube(size=[(generated_plate_width + 1), (total_height + text_full_backing_size), (text_full_backing_depth + (thin_dim))], center=true);
+      }
+    }
+  } else {
+    translate([0, (text_full_center_height_offset + (text_full_size * 0.4) + text_full_backing_height_adjust), ( (plate_thickness + thin_dim) - (text_full_backing_depth / 2))]) {
+      cube(size=[(generated_plate_width + 1), (total_height + text_full_backing_size), (text_full_backing_depth + (thin_dim))], center=true);
+    }
   }
 }
 
@@ -785,14 +793,12 @@ if (test_mode) {
     }
   }
   if ( (enable_text_full_backing) && (enable_text_full)) {
-    color(text_full_backing_color) {
-      intersection() {
-        difference() {
-          text_full_backing();
-          text_full();
-        }
-        decoration_bounding_box();
+    intersection() {
+      difference() {
+        text_full_backing(in_color=true);
+        text_full();
       }
+      decoration_bounding_box();
     }
   }
   if ( (enable_text_ps_backing) && (enable_text_ps)) {
