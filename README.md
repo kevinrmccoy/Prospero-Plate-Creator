@@ -26,11 +26,13 @@ Cuts holes for the switch and LED on a standard Prospero single-switch plate.  T
 
 Places a single line of text on the plate according to the settings given.  The offset for this text is measured from the center of the whole plate (with the default being centered on both axes.)
 
+Using a backslash (\\) in the text will add a line break.
+
 Choose the "enable text full backing" option to have a different color behind the text, giving the appearance of a text label on colored tape.
 
 ### Per Switch Text
 
-Allows separate labels for each switch plate.  Enter the text with each switch separated by commas, for example "SL, US, SR" for three switches.  (Spaces will be removed from the beginning and end of each item.)  A blank switch can be created by using an extra comma.  The text settings are the same for all switches, but they're separate from the "full plate" text settings.  Offsets are based from the centerline of each switch.  When the "text separate" option is enabled, the text for each switch will be a slightly different color, which makes them appear as separate filaments in the 3mf file.  If you want them all the same, you can merge them in your slicer.
+Allows separate labels for each switch plate.  Enter the text with each switch separated by commas, for example "SL, US, SR" for three switches.  Spaces will be removed from the beginning and end of each item.  A blank switch can be created by using an extra comma.  Including a backslash (\\) in the text will add a line break for that switch's text. The text settings are the same for all switches, but they're separate from the "full plate" text settings.  Offsets are based from the centerline of each switch.  When the "text separate" option is enabled, the text for each switch will be a slightly different color, which makes them appear as separate filaments in the 3mf file.  If you want them all the same, you can merge them in your slicer.
 
 Choose the "enable text ps backing" option to have a different color behind the text, giving the appearance of a text label on colored tape.  This color will be different for each switch allowing you to make color and filament choices in your slicer.
 
@@ -79,6 +81,10 @@ The screws to hold the plates to the unit are 1/4" #4-40, as indicated in the [P
 ![Photograph of quad plate with text mounted in Prospero unit](ProsperoPlate-4WideWithText.jpg)
 
 ## Version History
+
+Version 1.7 - 2025-08-17
+
+- Add multiline text
 
 Version 1.61 - 2025-08-08
 

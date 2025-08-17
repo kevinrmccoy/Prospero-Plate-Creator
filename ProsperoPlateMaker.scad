@@ -34,7 +34,7 @@ text_full_effect = "emboss"; // [emboss, deboss]
 // Make multi-color print? (When effect is "deboss" this will fill the debossed part with a separate color.)
 text_full_separate = true;
 
-// The text to display on the plate.
+// The text to display on the plate.  You can use backslash (\) as a line separator.
 text_full_string = "Prospero";
 
 // Font size. [mm]
@@ -86,7 +86,7 @@ text_ps_effect = "emboss"; // [emboss, deboss]
 // Make multi-color print? (When effect is "deboss" this will fill the debossed part with a separate color.)
 text_ps_separate = true;
 
-// A comma-delimited list of text to show for each switch, for example "a, b, c".  Any leading or trailing spaces will be removed.  Excess items will be ignored.
+// A comma-delimited list of text to show for each switch, for example "a, b, c".  Any leading or trailing spaces will be removed. You can use backslash (\) as a line separator within each item.  Excess items will be ignored.
 text_ps_string = "a,b,c";
 
 // Font size. [mm]
@@ -125,8 +125,8 @@ text_ps_backing_size = 0; // [-4:0.1:20]
 // Tweak the vertical position of the backing rectangles (from its default which is based on the text's center.)
 text_ps_backing_height_adjust = 0; // [-6:0.1:6]
 
-// Tweak the size of the gap between the color blocks behind each switch's label (0.4 default) [mm].
-text_ps_width_size_adjust = 0.4; // [0:0.1:4]
+// Tweak the size of the gap between the color blocks behind each switch's label (0 default) [mm].
+text_ps_width_size_adjust = 0.0; // [0:0.1:4]
 
 // Depth of backing rectangles [mm]. (Default is 0.4 mm.)
 text_ps_backing_depth = 0.4; // [0.2:0.1:2]
@@ -285,7 +285,6 @@ generated_plate_width =
 text_ps_strings = str_split(text_ps_string, ",");
 text_ps_strings_lines = [ for (i=[0:len(text_ps_strings)-1]) len(str_find(text_ps_strings[i], "\\", all=true)) ];
 text_ps_strings_max_lines = max(text_ps_strings_lines) + 1;
-echo(text_ps_strings_max_lines = text_ps_strings_max_lines);
 
 // --- Calculated Taper Z-Dim ---
 // Z-height of the tapered/chamfered edge portion.
