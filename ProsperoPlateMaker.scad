@@ -647,9 +647,12 @@ module decoration_bounding_box() {
   box_height = enable_stiffener ? (stiffener_depth + safe_bound_height + 2 * thin_dim) : safe_bound_height;
   box_depth = enable_stiffener ? (stiffener_depth + 2 * thin_dim) : 0;
   difference() {
-    translate([0, 0, -1 * box_depth]) {
-      linear_extrude(height=box_height) {
-        tapered_edge_plan_sketch();
+    union() {
+      plate_body();
+      translate([0, 0, -1 * box_depth]) {
+        linear_extrude(height=box_height) {
+          tapered_edge_plan_sketch();
+        }
       }
     }
     mounting_holes();
