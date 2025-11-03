@@ -683,9 +683,11 @@ if (test_mode) {
   echo("test mode");
   stiffener_body();
 } else if (number_of_units > 0) {
-  color(plate_color) {
-    difference() {
-      // Start with plate body with embossed non-separate items
+
+  difference() {
+    // Start with plate body with embossed non-separate items
+
+    color(plate_color) {
       union() {
         plate_body();
         if (enable_stiffener) {
@@ -719,54 +721,55 @@ if (test_mode) {
           }
         }
       }
-      // Subtract mounting holes
-      mounting_holes();
-      // Subtract electronics holes
-      if (electronics_holes) {
-        electronics_holes();
+    }
+    // Subtract mounting holes
+    mounting_holes();
+    // Subtract electronics holes
+    if (electronics_holes) {
+      electronics_holes();
+    }
+    if ( (enable_stiffener) && (end_plate != "none")) {
+      plate_end_cutoff(direction=end_plate);
+    }
+    // Subtract debossed items
+    if (enable_text_full && (text_full_effect == "deboss")) {
+      intersection() {
+        text_full();
+        decoration_bounding_box();
       }
-      if ( (enable_stiffener) && (end_plate != "none")) {
-        plate_end_cutoff(direction=end_plate);
+    }
+    if (enable_text_ps && (text_ps_effect == "deboss")) {
+      intersection() {
+        text_per_switch(in_color=false);
+        decoration_bounding_box();
       }
-      // Subtract debossed items
-      if (enable_text_full && (text_full_effect == "deboss")) {
-        intersection() {
-          text_full();
-          decoration_bounding_box();
-        }
+    }
+    if (enable_svg && (svg_effect == "deboss")) {
+      intersection() {
+        svg_object();
+        decoration_bounding_box();
       }
-      if (enable_text_ps && (text_ps_effect == "deboss")) {
-        intersection() {
-          text_per_switch(in_color=false);
-          decoration_bounding_box();
-        }
+    }
+    if (enable_png && (png_effect == "deboss")) {
+      intersection() {
+        png_object();
+        decoration_bounding_box();
       }
-      if (enable_svg && (svg_effect == "deboss")) {
-        intersection() {
-          svg_object();
-          decoration_bounding_box();
-        }
+    }
+    if ( (enable_text_full_backing) && (enable_text_full)) {
+      intersection() {
+        text_full_backing();
+        decoration_bounding_box();
       }
-      if (enable_png && (png_effect == "deboss")) {
-        intersection() {
-          png_object();
-          decoration_bounding_box();
-        }
-      }
-      if ( (enable_text_full_backing) && (enable_text_full)) {
-        intersection() {
-          text_full_backing();
-          decoration_bounding_box();
-        }
-      }
-      if ( (enable_text_ps_backing) && (enable_text_ps)) {
-        intersection() {
-          text_per_switch_backing();
-          decoration_bounding_box();
-        }
+    }
+    if ( (enable_text_ps_backing) && (enable_text_ps)) {
+      intersection() {
+        text_per_switch_backing();
+        decoration_bounding_box();
       }
     }
   }
+
   if ( (enable_text_full) && (text_full_separate)) {
     intersection() {
       text_full(in_color=true);
