@@ -15,6 +15,9 @@ number_of_units = 1; // [1:10]
 // Make only the corner mounting holes, rather than for every plate position?
 corner_holes_only = false;
 
+// Make the mounting holes into slots to allow for slight variations in horizontal size?
+mounting_slots = false;
+
 // Enable to cut holes for the switch and LED (for a single switch configuration.)
 electronics_holes = false;
 
@@ -207,6 +210,9 @@ multiline_backing_space_factor = 1.2; //[0.1:0.1:2.0]
 // Diameter of mounting holes [mm]. (3.25 default)
 hole_diameter = 3.25; // [1:0.01:5]
 
+// Mounting slot size (horizontal size, measured from center to center of the end circles for each slot)
+mounting_slot_size = 2.0; // [0.1:0.1:5]
+
 // Nominal size of the chamfer on edges [mm]. Makes edges not sharp.  0.4 is a good number.
 edge_chamfer_size = 0.4; // [0:0.05:1]
 
@@ -393,9 +399,27 @@ module mounting_holes() {
     // Create the pair of holes (spaced along long axis by hole_spacing) for the current unit at its calculated center.
     if ( (i == 0) || (i == (number_of_units - 1)) || (corner_holes_only == false)) {
       translate([current_unit_width_center, hole_spacing / 2, hole_cut_height / 2])
-        cylinder(r=hole_radius, h=hole_cut_height, center=true);
+        if (mounting_slots) {
+          hull() {
+            translate([mounting_slot_size / 2, 0, 0])
+              cylinder(r=hole_radius, h=hole_cut_height, center=true);
+            translate([-mounting_slot_size / 2, 0, 0])
+              cylinder(r=hole_radius, h=hole_cut_height, center=true);
+          }
+        } else {
+          cylinder(r=hole_radius, h=hole_cut_height, center=true);
+        }
       translate([current_unit_width_center, -hole_spacing / 2, hole_cut_height / 2])
-        cylinder(r=hole_radius, h=hole_cut_height, center=true);
+        if (mounting_slots) {
+          hull() {
+            translate([mounting_slot_size / 2, 0, 0])
+              cylinder(r=hole_radius, h=hole_cut_height, center=true);
+            translate([-mounting_slot_size / 2, 0, 0])
+              cylinder(r=hole_radius, h=hole_cut_height, center=true);
+          }
+        } else {
+          cylinder(r=hole_radius, h=hole_cut_height, center=true);
+        }
     }
   }
 }
