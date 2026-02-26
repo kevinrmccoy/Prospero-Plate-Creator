@@ -82,6 +82,10 @@ The screws to hold the plates to the unit are 1/4" #4-40, as indicated in the [P
 
 ## Version History
 
+Version 1.71 - 2026-02-26
+
+- Add option to make mounting holes into slots
+
 Version 1.7 - 2025-08-17
 
 - Add multiline text
